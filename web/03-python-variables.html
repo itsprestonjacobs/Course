@@ -1,80 +1,102 @@
 <section class="ddc">
-<h1>Troubleshooting</h1>
-<p>Almost every beginner hits the same handful of errors. Find yours here before pulling your
-hair out. The golden rule: <strong>read the last few red lines in your terminal</strong> — they almost
-always name the file and line.</p>
-<h2>Setup &amp; startup</h2>
-<p><strong><code>python</code> is not recognized</strong>
-Python isn't on your PATH. Reinstall Python and tick <strong>"Add Python to PATH"</strong> on the first
-installer screen.</p>
-<p><strong>Windows: "running scripts is disabled on this system"</strong>
-Run once, then activate the venv again:
-<code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code></p>
-<p><strong><code>ModuleNotFoundError: No module named 'discord'</code></strong>
-The library isn't installed in the environment you're using. Make sure <code>(venv)</code> shows in the
-terminal, then <code>pip install discord.py python-dotenv</code>.</p>
-<p><strong><code>No token found</code> / <code>LoginFailure: Improper token</code></strong>
-- Is there a file named exactly <code>.env</code> (not <code>env.txt</code>) next to <code>main.py</code>?
-- Does the line read <code>DISCORD_TOKEN=...</code> with your real token, no quotes or spaces?
-- If unsure, reset the token in the Developer Portal and paste the new one.</p>
-<p><strong><code>PrivilegedIntentsRequired</code></strong>
-You didn't switch the intents ON in the Developer Portal → your app → <strong>Bot</strong>. Enable
-<strong>Server Members</strong> and <strong>Message Content</strong>, save, and restart.</p>
-<h2>Commands</h2>
-<p><strong>Slash commands don't show up</strong>
-- Set <code>GUILD_ID</code> in <code>.env</code> to your test server's ID — commands then appear instantly.
-- Make sure you invited the bot with the <strong><code>applications.commands</code></strong> scope. If not,
-  re-invite with a new OAuth2 URL.
-- Fully close and reopen Discord (the list is cached).</p>
-<p><strong>"This interaction failed"</strong>
-The code errored before replying. Check the terminal for the red traceback. The usual
-culprit is a missing <strong><code>await</code></strong>, or replying twice to the same interaction.</p>
-<p><strong>"Unknown interaction" / took too long</strong>
-You didn't respond within <strong>3 seconds</strong>. Call <code>await interaction.response.defer()</code> first for
-slow commands, then <code>interaction.followup.send(...)</code>.</p>
-<p><strong><code>InteractionResponded</code> — already responded</strong>
-You called <code>interaction.response.send_message</code> twice. After the first response, use
-<code>interaction.followup.send(...)</code> instead.</p>
-<h2>Moderation &amp; roles</h2>
-<p><strong>"Missing Permissions" when a command runs</strong>
-Discord is refusing the <strong>bot</strong>, not you. Two fixes:
-- The bot's role must be <strong>above</strong> the member it's acting on — drag it up in Server Settings
-  → Roles.
-- The bot must actually have the permission — re-invite with the box checked.</p>
-<p><strong><code>/warn</code> couldn't DM the member</strong>
-Their DMs are closed. Expected — the warning still posts in the channel.</p>
-<p><strong>A role won't get added</strong>
-The bot needs <strong>Manage Roles</strong>, and its role must sit <strong>above</strong> the role it's handing out.</p>
-<h2>Components (buttons / dropdowns / modals)</h2>
-<p><strong>Buttons/dropdown stop working after a restart</strong>
-They're not persistent. Add <code>timeout=None</code>, a <code>custom_id</code> on every component, and
-<code>self.bot.add_view(...)</code> in the cog's <code>cog_load</code>.</p>
-<p><strong>"This interaction failed" on a button</strong>
-Same as commands — the callback errored (check the terminal) or didn't respond. A callback
-must call <code>interaction.response.send_message(...)</code> (or <code>defer</code>, <code>edit_message</code>, <code>send_modal</code>).</p>
-<h2>Data</h2>
-<p><strong>JSON <code>KeyError</code></strong>
-You read a key that doesn't exist. Use <code>.get(key, default)</code> instead of <code>data[key]</code>, and
-remember JSON keys are <strong>strings</strong> — use <code>str(user_id)</code>.</p>
-<p><strong>Data resets every restart</strong>
-You're changing the dictionary in memory but never calling <code>save()</code>. Save after every
-change.</p>
-<p><strong>SQLite changes don't stick</strong>
-You forgot <code>conn.commit()</code> after an <code>INSERT</code>/<code>UPDATE</code>.</p>
-<h2>Auto-moderation / message events</h2>
-<p><strong><code>on_message</code> never fires</strong>
-The <strong>Message Content Intent</strong> is off (portal <em>and</em> code: <code>intents.message_content = True</code>).</p>
-<p><strong>The bot reacts to its own messages / loops forever</strong>
-Always start message listeners with <code>if message.author.bot: return</code>.</p>
-<p><strong>Prefix commands stopped working after I added on_message</strong>
-End your <code>on_message</code> with <code>await bot.process_commands(message)</code>.</p>
-<h2>Still stuck?</h2>
-<ol>
-<li>Read the <strong>terminal</strong> — the traceback names the file and line.</li>
-<li>Compare your file against the working version in the <code>bot/</code> folder.</li>
-<li>Search the exact error text — you're rarely the first to hit it.</li>
-<li>Check the official docs at <strong>discordpy.readthedocs.io</strong>.</li>
-</ol>
+<h1>Python: Variables &amp; Types</h1>
+<p>Now we learn Python itself, from zero. Make a file called <code>practice.py</code> in your project and
+run each snippet with <code>python practice.py</code>. Typing the examples yourself — not just reading
+— is how this sticks.</p>
+<h2>print() — showing things</h2>
+<p><code>print()</code> displays text in the terminal:</p>
+<div class="codehilite"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello, world!&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h2>Variables — labeled boxes</h2>
+<p>A <strong>variable</strong> stores a value under a name so you can use it later:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Derpy&quot;</span>
+<span class="n">age</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">age</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Read <code>=</code> as "gets set to." <code>name</code> gets set to <code>"Derpy"</code>.</p>
+<h2>The basic types</h2>
+<p>Python values come in a few flavors. The main ones:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;hello&quot;</span>        <span class="c1"># str  — text, always in quotes</span>
+<span class="n">number</span> <span class="o">=</span> <span class="mi">42</span>           <span class="c1"># int  — a whole number</span>
+<span class="n">price</span> <span class="o">=</span> <span class="mf">3.99</span>          <span class="c1"># float — a number with a decimal</span>
+<span class="n">is_online</span> <span class="o">=</span> <span class="kc">True</span>      <span class="c1"># bool — either True or False</span>
+<span class="n">nothing</span> <span class="o">=</span> <span class="kc">None</span>        <span class="c1"># None — &quot;no value yet&quot;</span>
+</code></pre></div>
+
+<p>You can check a value's type with <code>type()</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="mi">42</span><span class="p">))</span>       <span class="c1"># &lt;class &#39;int&#39;&gt;</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="s2">&quot;hi&quot;</span><span class="p">))</span>     <span class="c1"># &lt;class &#39;str&#39;&gt;</span>
+</code></pre></div>
+
+<h2>Working with text (strings)</h2>
+<p>Strings can be joined and measured:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">first</span> <span class="o">=</span> <span class="s2">&quot;Derpy&quot;</span>
+<span class="n">last</span> <span class="o">=</span> <span class="s2">&quot;Designs&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">first</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">last</span><span class="p">)</span>   <span class="c1"># Derpy Designs</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">first</span><span class="p">))</span>           <span class="c1"># 5  (number of characters)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>        <span class="c1"># DERPY</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>        <span class="c1"># derpy</span>
+</code></pre></div>
+
+<h2>f-strings — the clean way to build text</h2>
+<p>Put an <code>f</code> before the quotes, then drop variables straight in with <code>{ }</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Derpy&quot;</span>
+<span class="n">age</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">age</span><span class="si">}</span><span class="s2"> years old&quot;</span><span class="p">)</span>   <span class="c1"># Derpy is 3 years old</span>
+</code></pre></div>
+
+<p>f-strings are everywhere in bot code — for example naming a channel <code>f"ticket-{user_id}"</code>.
+Get comfortable with them now.</p>
+<h2>Numbers and math</h2>
+<div class="codehilite"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="mi">5</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>     <span class="c1"># 8</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">10</span> <span class="o">-</span> <span class="mi">4</span><span class="p">)</span>    <span class="c1"># 6</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">6</span> <span class="o">*</span> <span class="mi">7</span><span class="p">)</span>     <span class="c1"># 42</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">10</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>    <span class="c1"># 3.333...</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">10</span> <span class="o">//</span> <span class="mi">3</span><span class="p">)</span>   <span class="c1"># 3   (whole-number division)</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">10</span> <span class="o">%</span> <span class="mi">3</span><span class="p">)</span>    <span class="c1"># 1   (remainder — great for &quot;every Nth time&quot;)</span>
+</code></pre></div>
+
+<h2>Changing a variable</h2>
+<p>A variable can be updated:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">score</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">score</span> <span class="o">=</span> <span class="n">score</span> <span class="o">+</span> <span class="mi">5</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>     <span class="c1"># 15</span>
+
+<span class="n">score</span> <span class="o">+=</span> <span class="mi">5</span>       <span class="c1"># shortcut for &quot;score = score + 5&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>     <span class="c1"># 20</span>
+</code></pre></div>
+
+<h2>Practice</h2>
+<p>Try to predict the output, then run it:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">xp</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">level</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You have </span><span class="si">{</span><span class="n">xp</span><span class="si">}</span><span class="s2"> XP and are level </span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+<span class="n">xp</span> <span class="o">+=</span> <span class="mi">50</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;After the boost: </span><span class="si">{</span><span class="n">xp</span><span class="si">}</span><span class="s2"> XP&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Challenge:</strong> make a variable <code>username</code>, then print
+<code>Welcome, &lt;username&gt;! Your name is &lt;N&gt; letters long.</code> using an f-string and <code>len()</code>.</p>
+<details><summary>Solution</summary>
+
+
+<div class="codehilite"><pre><span></span><code><span class="n">username</span> <span class="o">=</span> <span class="s2">&quot;Sam&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Welcome, </span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">! Your name is </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">username</span><span class="p">)</span><span class="si">}</span><span class="s2"> letters long.&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+
+</details>
+
+<h2>Recap</h2>
+<ul>
+<li><strong>Variables</strong> store values; <code>=</code> assigns.</li>
+<li>Types: <strong>str, int, float, bool, None</strong>.</li>
+<li><strong>f-strings</strong> (<code>f"{name}"</code>) build text cleanly.</li>
+<li><code>+=</code> updates a variable in place.</li>
+</ul>
 </section>
 <style>
 .ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}

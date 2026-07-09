@@ -1,79 +1,103 @@
 # Troubleshooting
 
 Almost every beginner hits the same handful of errors. Find yours here before pulling your
-hair out.
+hair out. The golden rule: **read the last few red lines in your terminal** — they almost
+always name the file and line.
 
-## The bot won't start
-
-**`No token found` / `LoginFailure: Improper token`**
-Your token is missing or wrong. Check that:
-- You have a file named exactly `.env` (not `env.txt`) next to `main.py`.
-- The line reads `DISCORD_TOKEN=...` with your real token and no quotes or spaces.
-- The token hasn't been reset. If unsure, reset it in the Developer Portal and paste the
-  new one.
-
-**`ModuleNotFoundError: No module named 'discord'`**
-The library isn't installed in the environment you're running. Make sure `(venv)` shows in
-your terminal, then run `pip install discord.py python-dotenv` again.
+## Setup & startup
 
 **`python` is not recognized**
-Python isn't on your PATH. Reinstall Python and check **"Add Python to PATH"** on the first
+Python isn't on your PATH. Reinstall Python and tick **"Add Python to PATH"** on the first
 installer screen.
 
 **Windows: "running scripts is disabled on this system"**
-Run this once, then activate the venv again:
-```
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
+Run once, then activate the venv again:
+`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
 
-## The bot is online but…
+**`ModuleNotFoundError: No module named 'discord'`**
+The library isn't installed in the environment you're using. Make sure `(venv)` shows in the
+terminal, then `pip install discord.py python-dotenv`.
+
+**`No token found` / `LoginFailure: Improper token`**
+- Is there a file named exactly `.env` (not `env.txt`) next to `main.py`?
+- Does the line read `DISCORD_TOKEN=...` with your real token, no quotes or spaces?
+- If unsure, reset the token in the Developer Portal and paste the new one.
+
+**`PrivilegedIntentsRequired`**
+You didn't switch the intents ON in the Developer Portal → your app → **Bot**. Enable
+**Server Members** and **Message Content**, save, and restart.
+
+## Commands
 
 **Slash commands don't show up**
-- Set `GUILD_ID` in your `.env` to your test server's ID — commands then appear instantly.
-  Without it, global commands can take up to an hour.
-- Make sure you invited the bot with the **`applications.commands`** scope (Lesson 03). If
-  not, re-invite it with a new OAuth2 URL.
-- Fully close Discord and reopen it; the command list is cached.
+- Set `GUILD_ID` in `.env` to your test server's ID — commands then appear instantly.
+- Make sure you invited the bot with the **`applications.commands`** scope. If not,
+  re-invite with a new OAuth2 URL.
+- Fully close and reopen Discord (the list is cached).
 
-**`PrivilegedIntentsRequired` on startup**
-You didn't flip the intent switches. In the Developer Portal → your app → **Bot**, turn on
-**Server Members** and **Message Content**, then Save.
+**"This interaction failed"**
+The code errored before replying. Check the terminal for the red traceback. The usual
+culprit is a missing **`await`**, or replying twice to the same interaction.
 
-**A command replies "This interaction failed"**
-Usually the code errored before replying. Look at your terminal for the red traceback — it
-names the file and line. A very common cause is forgetting `await` in front of a Discord
-action.
+**"Unknown interaction" / took too long**
+You didn't respond within **3 seconds**. Call `await interaction.response.defer()` first for
+slow commands, then `interaction.followup.send(...)`.
 
-## Moderation problems
+**`InteractionResponded` — already responded**
+You called `interaction.response.send_message` twice. After the first response, use
+`interaction.followup.send(...)` instead.
+
+## Moderation & roles
 
 **"Missing Permissions" when a command runs**
 Discord is refusing the **bot**, not you. Two fixes:
-- The bot's role must be **above** the member it's acting on. Drag it up in Server Settings
+- The bot's role must be **above** the member it's acting on — drag it up in Server Settings
   → Roles.
-- The bot must actually have the permission (Kick/Ban/etc.). Re-invite it with those boxes
-  checked, or grant the permission to its role.
+- The bot must actually have the permission — re-invite with the box checked.
 
-**`/warn` says it couldn't DM the member**
-That member has DMs turned off. Nothing you can do — the warning embed still posts in the
-channel.
+**`/warn` couldn't DM the member**
+Their DMs are closed. Expected — the warning still posts in the channel.
 
-## Ticket problems
+**A role won't get added**
+The bot needs **Manage Roles**, and its role must sit **above** the role it's handing out.
 
-**Clicking the dropdown/Close does nothing after a restart**
-You need the persistence step. Make sure the `cog_load` method with `self.bot.add_view(...)`
-is in your `Tickets` cog (Lesson 07, Step 6), and that every button/dropdown has a
-`custom_id`.
+## Components (buttons / dropdowns / modals)
 
-**Ticket channel is visible to everyone**
-Check the permission overwrites in `create_ticket` — `guild.default_role` must be set to
-`view_channel=False`.
+**Buttons/dropdown stop working after a restart**
+They're not persistent. Add `timeout=None`, a `custom_id` on every component, and
+`self.bot.add_view(...)` in the cog's `cog_load`.
 
-**No transcript appears on close**
-The transcript is only saved if a channel named exactly `ticket-logs` exists. Create it, or
-remove that part of the code.
+**"This interaction failed" on a button**
+Same as commands — the callback errored (check the terminal) or didn't respond. A callback
+must call `interaction.response.send_message(...)` (or `defer`, `edit_message`, `send_modal`).
+
+## Data
+
+**JSON `KeyError`**
+You read a key that doesn't exist. Use `.get(key, default)` instead of `data[key]`, and
+remember JSON keys are **strings** — use `str(user_id)`.
+
+**Data resets every restart**
+You're changing the dictionary in memory but never calling `save()`. Save after every
+change.
+
+**SQLite changes don't stick**
+You forgot `conn.commit()` after an `INSERT`/`UPDATE`.
+
+## Auto-moderation / message events
+
+**`on_message` never fires**
+The **Message Content Intent** is off (portal *and* code: `intents.message_content = True`).
+
+**The bot reacts to its own messages / loops forever**
+Always start message listeners with `if message.author.bot: return`.
+
+**Prefix commands stopped working after I added on_message**
+End your `on_message` with `await bot.process_commands(message)`.
 
 ## Still stuck?
 
-Read the **terminal output** — the actual error message almost always names the file and
-line number. Copy the last few red lines and search them; you're rarely the first person to
-hit that exact error.
+1. Read the **terminal** — the traceback names the file and line.
+2. Compare your file against the working version in the `bot/` folder.
+3. Search the exact error text — you're rarely the first to hit it.
+4. Check the official docs at **discordpy.readthedocs.io**.

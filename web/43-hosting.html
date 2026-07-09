@@ -1,80 +1,90 @@
 <section class="ddc">
-<h1>Troubleshooting</h1>
-<p>Almost every beginner hits the same handful of errors. Find yours here before pulling your
-hair out. The golden rule: <strong>read the last few red lines in your terminal</strong> — they almost
-always name the file and line.</p>
-<h2>Setup &amp; startup</h2>
-<p><strong><code>python</code> is not recognized</strong>
-Python isn't on your PATH. Reinstall Python and tick <strong>"Add Python to PATH"</strong> on the first
-installer screen.</p>
-<p><strong>Windows: "running scripts is disabled on this system"</strong>
-Run once, then activate the venv again:
-<code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code></p>
-<p><strong><code>ModuleNotFoundError: No module named 'discord'</code></strong>
-The library isn't installed in the environment you're using. Make sure <code>(venv)</code> shows in the
-terminal, then <code>pip install discord.py python-dotenv</code>.</p>
-<p><strong><code>No token found</code> / <code>LoginFailure: Improper token</code></strong>
-- Is there a file named exactly <code>.env</code> (not <code>env.txt</code>) next to <code>main.py</code>?
-- Does the line read <code>DISCORD_TOKEN=...</code> with your real token, no quotes or spaces?
-- If unsure, reset the token in the Developer Portal and paste the new one.</p>
-<p><strong><code>PrivilegedIntentsRequired</code></strong>
-You didn't switch the intents ON in the Developer Portal → your app → <strong>Bot</strong>. Enable
-<strong>Server Members</strong> and <strong>Message Content</strong>, save, and restart.</p>
-<h2>Commands</h2>
-<p><strong>Slash commands don't show up</strong>
-- Set <code>GUILD_ID</code> in <code>.env</code> to your test server's ID — commands then appear instantly.
-- Make sure you invited the bot with the <strong><code>applications.commands</code></strong> scope. If not,
-  re-invite with a new OAuth2 URL.
-- Fully close and reopen Discord (the list is cached).</p>
-<p><strong>"This interaction failed"</strong>
-The code errored before replying. Check the terminal for the red traceback. The usual
-culprit is a missing <strong><code>await</code></strong>, or replying twice to the same interaction.</p>
-<p><strong>"Unknown interaction" / took too long</strong>
-You didn't respond within <strong>3 seconds</strong>. Call <code>await interaction.response.defer()</code> first for
-slow commands, then <code>interaction.followup.send(...)</code>.</p>
-<p><strong><code>InteractionResponded</code> — already responded</strong>
-You called <code>interaction.response.send_message</code> twice. After the first response, use
-<code>interaction.followup.send(...)</code> instead.</p>
-<h2>Moderation &amp; roles</h2>
-<p><strong>"Missing Permissions" when a command runs</strong>
-Discord is refusing the <strong>bot</strong>, not you. Two fixes:
-- The bot's role must be <strong>above</strong> the member it's acting on — drag it up in Server Settings
-  → Roles.
-- The bot must actually have the permission — re-invite with the box checked.</p>
-<p><strong><code>/warn</code> couldn't DM the member</strong>
-Their DMs are closed. Expected — the warning still posts in the channel.</p>
-<p><strong>A role won't get added</strong>
-The bot needs <strong>Manage Roles</strong>, and its role must sit <strong>above</strong> the role it's handing out.</p>
-<h2>Components (buttons / dropdowns / modals)</h2>
-<p><strong>Buttons/dropdown stop working after a restart</strong>
-They're not persistent. Add <code>timeout=None</code>, a <code>custom_id</code> on every component, and
-<code>self.bot.add_view(...)</code> in the cog's <code>cog_load</code>.</p>
-<p><strong>"This interaction failed" on a button</strong>
-Same as commands — the callback errored (check the terminal) or didn't respond. A callback
-must call <code>interaction.response.send_message(...)</code> (or <code>defer</code>, <code>edit_message</code>, <code>send_modal</code>).</p>
-<h2>Data</h2>
-<p><strong>JSON <code>KeyError</code></strong>
-You read a key that doesn't exist. Use <code>.get(key, default)</code> instead of <code>data[key]</code>, and
-remember JSON keys are <strong>strings</strong> — use <code>str(user_id)</code>.</p>
-<p><strong>Data resets every restart</strong>
-You're changing the dictionary in memory but never calling <code>save()</code>. Save after every
-change.</p>
-<p><strong>SQLite changes don't stick</strong>
-You forgot <code>conn.commit()</code> after an <code>INSERT</code>/<code>UPDATE</code>.</p>
-<h2>Auto-moderation / message events</h2>
-<p><strong><code>on_message</code> never fires</strong>
-The <strong>Message Content Intent</strong> is off (portal <em>and</em> code: <code>intents.message_content = True</code>).</p>
-<p><strong>The bot reacts to its own messages / loops forever</strong>
-Always start message listeners with <code>if message.author.bot: return</code>.</p>
-<p><strong>Prefix commands stopped working after I added on_message</strong>
-End your <code>on_message</code> with <code>await bot.process_commands(message)</code>.</p>
-<h2>Still stuck?</h2>
+<h1>Host It 24/7</h1>
+<p>Your bot only runs while <code>python main.py</code> is running on your computer. Close the terminal or
+shut down, and it goes offline. To keep it online around the clock, it needs to live on a
+computer that never sleeps — a <strong>host</strong>.</p>
+<h2>Step 1 — A requirements file</h2>
+<p>Any host needs to know which libraries to install. List them in <code>requirements.txt</code> next to
+<code>main.py</code>:</p>
+<div class="codehilite"><pre><span></span><code>discord.py&gt;=2.3.2
+python-dotenv&gt;=1.0.0
+aiohttp
+</code></pre></div>
+
+<p>Add any other library you <code>pip install</code>ed. On the host you'll run
+<code>pip install -r requirements.txt</code> to get them all at once.</p>
+<h2>Option A — Run on your own PC (free)</h2>
+<p>Totally fine while learning. The bot is online only while your computer is on and the script
+is running. Nothing extra to set up.</p>
+<h2>Option B — A VPS (the standard for real bots)</h2>
+<p>A <strong>VPS</strong> is a small rented Linux computer that stays on 24/7 (a few dollars a month). The
+steps once you have one:</p>
 <ol>
-<li>Read the <strong>terminal</strong> — the traceback names the file and line.</li>
-<li>Compare your file against the working version in the <code>bot/</code> folder.</li>
-<li>Search the exact error text — you're rarely the first to hit it.</li>
-<li>Check the official docs at <strong>discordpy.readthedocs.io</strong>.</li>
+<li><strong>Get your code there.</strong> Easiest: push to GitHub (last lesson), then on the server run
+   <code>git clone https://github.com/you/your-repo.git</code>.</li>
+<li><strong>Install Python and the requirements:</strong>
+   <code>pip install -r requirements.txt</code></li>
+<li><strong>Add your token.</strong> On a server, set it as an <strong>environment variable</strong> instead of a
+   <code>.env</code> file (safer and standard). How you do this depends on the host; often it's a
+   dashboard field or an <code>export DISCORD_TOKEN=...</code> line.</li>
+<li><strong>Keep it running after you log out.</strong> If you just run <code>python main.py</code> and disconnect,
+   it stops. Use one of these:</li>
 </ol>
+<h3>Keep-alive with a systemd service (recommended on Linux)</h3>
+<p>Create <code>/etc/systemd/system/mybot.service</code>:</p>
+<div class="codehilite"><pre><span></span><code>[Unit]
+Description=My Discord Bot
+After=network.target
+
+[Service]
+WorkingDirectory=/home/youruser/your-repo
+ExecStart=/usr/bin/python3 main.py
+Restart=always
+Environment=DISCORD_TOKEN=your-token-here
+
+[Install]
+WantedBy=multi-user.target
+</code></pre></div>
+
+<p>Then:</p>
+<div class="codehilite"><pre><span></span><code>sudo systemctl enable mybot     # start on boot
+sudo systemctl start mybot      # start now
+sudo systemctl status mybot     # check it&#39;s running
+</code></pre></div>
+
+<p><code>Restart=always</code> means if the bot crashes, the server restarts it automatically. That's the
+big win of systemd.</p>
+<h3>The quick-and-dirty way</h3>
+<p>For testing, <code>screen</code> or <code>tmux</code> keeps a session alive after you disconnect:</p>
+<div class="codehilite"><pre><span></span><code>screen -S bot
+python3 main.py
+# press Ctrl+A then D to &quot;detach&quot; and leave it running
+</code></pre></div>
+
+<h2>Option C — A managed bot host</h2>
+<p>Several services are built specifically to host Discord bots: you connect your GitHub repo
+(or upload files), set your token in their dashboard, and click start. They handle keeping it
+alive for you. Easiest to begin with; search "Discord bot hosting" and compare.</p>
+<h2>A note on "free" hosts that sleep</h2>
+<p>Some free hosting tiers put your app to sleep when idle, which kills a bot. Bots need to stay
+connected constantly, so pick a host that runs your process continuously (a proper VPS or a
+bot-specific host), not one meant only for websites.</p>
+<h2>Practice</h2>
+<p><strong>Checklist before you deploy:</strong></p>
+<ul>
+<li>[ ] <code>requirements.txt</code> lists every library you use.</li>
+<li>[ ] The token is set as an environment variable on the host (not committed to GitHub).</li>
+<li>[ ] <code>Restart=always</code> (or the host's equivalent) is on, so a crash auto-recovers.</li>
+<li>[ ] You tested that the bot reconnects after the host reboots.</li>
+</ul>
+<h2>Recap</h2>
+<ul>
+<li>A <strong>host</strong> keeps your bot online 24/7; list dependencies in <code>requirements.txt</code>.</li>
+<li>On a <strong>VPS</strong>, use a <strong>systemd service</strong> with <code>Restart=always</code> so it survives crashes and
+  reboots.</li>
+<li>Set the token via an <strong>environment variable</strong>, never in the repo.</li>
+<li>Avoid free tiers that sleep idle apps.</li>
+</ul>
 </section>
 <style>
 .ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}

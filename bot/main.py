@@ -16,9 +16,17 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 COGS = [
+    "cogs.general",
     "cogs.embeds",
     "cogs.moderation",
+    "cogs.warnings",
+    "cogs.welcome",
+    "cogs.roles",
+    "cogs.automod",
+    "cogs.logs",
+    "cogs.economy",
     "cogs.tickets",
+    "cogs.botsettings",
 ]
 
 

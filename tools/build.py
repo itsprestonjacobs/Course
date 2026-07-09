@@ -24,18 +24,82 @@ SITE = os.path.join(BASE, "docs")   # GitHub Pages serves from /docs
 for d in (WEB, SITE):
     os.makedirs(d, exist_ok=True)
 
-LESSONS = [
-    ("l0", "00", "Welcome", "00-welcome.md", "lesson-00.html"),
-    ("l1", "01", "Setup", "01-setup.md", "lesson-01.html"),
-    ("l2", "02", "Python Basics", "02-python-crash-course.md", "lesson-02.html"),
-    ("l3", "03", "Register Your Bot", "03-register-your-bot.md", "lesson-03.html"),
-    ("l4", "04", "Your First Bot", "04-first-bot.md", "lesson-04.html"),
-    ("l5", "05", "Embeds", "05-embeds.md", "lesson-05.html"),
-    ("l6", "06", "Moderation", "06-moderation.md", "lesson-06.html"),
-    ("l7", "07", "Ticket System", "07-ticket-system.md", "lesson-07.html"),
-    ("l8", "08", "Hosting & Next", "08-hosting-and-next.md", "lesson-08.html"),
-    ("tb", "*", "Troubleshooting", "troubleshooting.md", "troubleshooting.html"),
+MODULES = [
+    ("Foundations", [
+        ("How Discord Bots Work", "01-how-bots-work.md"),
+        ("Install Your Tools", "02-tools-setup.md"),
+        ("Python: Variables & Types", "03-python-variables.md"),
+        ("Python: Lists & Dictionaries", "04-python-collections.md"),
+        ("Python: Making Decisions", "05-python-logic.md"),
+        ("Python: Loops", "06-python-loops.md"),
+        ("Python: Functions", "07-python-functions.md"),
+        ("Python: Classes & Objects", "08-python-classes.md"),
+        ("Python: Files & Errors", "09-python-files-errors.md"),
+        ("Async & Await", "10-async-await.md"),
+    ]),
+    ("Your Bot Comes Alive", [
+        ("Register Your Bot", "11-register-bot.md"),
+        ("Intents & Permissions", "12-intents-permissions.md"),
+        ("Invite Your Bot", "13-invite-bot.md"),
+        ("First Connection", "14-first-connection.md"),
+        ("Events", "15-events.md"),
+        ("Slash Commands", "16-slash-commands.md"),
+        ("Command Arguments", "17-command-arguments.md"),
+        ("Organizing with Cogs", "18-cogs.md"),
+    ]),
+    ("Messages & Embeds", [
+        ("Sending Messages & DMs", "19-messages.md"),
+        ("Embeds Deep Dive", "20-embeds.md"),
+        ("A Branding System", "21-branding.md"),
+    ]),
+    ("Interactive UI", [
+        ("Buttons & Views", "22-buttons.md"),
+        ("Select Menus (Dropdowns)", "23-select-menus.md"),
+        ("Modals (Pop-up Forms)", "24-modals.md"),
+        ("Persistent Components", "25-persistent-views.md"),
+    ]),
+    ("Moderation", [
+        ("Permissions & Role Hierarchy", "26-permissions-roles.md"),
+        ("Kick, Ban & Unban", "27-kick-ban.md"),
+        ("Timeout, Purge & Warn", "28-timeout-purge-warn.md"),
+        ("Welcome & Leave Messages", "29-welcome-leave.md"),
+        ("Auto-roles & Reaction Roles", "30-auto-reaction-roles.md"),
+        ("Auto-moderation", "31-automod.md"),
+        ("A Logging System", "32-logging.md"),
+    ]),
+    ("Data & Storage", [
+        ("Saving Data with JSON", "33-json.md"),
+        ("Databases with SQLite", "34-sqlite.md"),
+        ("Per-Server Settings", "35-per-server-settings.md"),
+    ]),
+    ("Projects", [
+        ("Project: Ticket System", "36-project-tickets.md"),
+        ("Project: Economy & Leveling", "37-project-economy.md"),
+    ]),
+    ("Going Further", [
+        ("Background Tasks & Scheduling", "38-tasks-scheduling.md"),
+        ("Cooldowns & Rate Limits", "39-cooldowns.md"),
+        ("Error Handling & a Help Command", "40-error-handling-help.md"),
+        ("Calling Web APIs & Webhooks", "41-web-apis.md"),
+    ]),
+    ("Ship It", [
+        ("Git & GitHub for Your Bot", "42-git-github.md"),
+        ("Host It 24/7", "43-hosting.md"),
+        ("Wrap-up & Next Steps", "44-wrap-up.md"),
+    ]),
+    ("Help", [
+        ("Troubleshooting", "troubleshooting.md"),
+    ]),
 ]
+
+# Flatten into (lid, num, title, src, out, module).
+LESSONS = []
+_i = 0
+for _module, _items in MODULES:
+    for _title, _src in _items:
+        _i += 1
+        _num = "?" if _src == "troubleshooting.md" else f"{_i:02d}"
+        LESSONS.append((f"l{_i}", _num, _title, _src, _src.replace(".md", ".html"), _module))
 
 # Dark code theme so code reads the same in both site themes (Discord-like).
 try:
@@ -120,7 +184,7 @@ FRAG_STYLE = ("<style>\n.ddc{" + TOKENS_LIGHT +
               + CONTENT_CSS + "\n</style>")
 FRAG_SCRIPT = "<script>\n" + ENHANCE_JS + "\n</script>"
 
-for lid, num, title, src, out in LESSONS:
+for lid, num, title, src, out, module in LESSONS:
     body = convert(src)
     frag = f'<section class="ddc">\n{body}\n</section>\n{FRAG_STYLE}\n{FRAG_SCRIPT}\n'
     with open(os.path.join(WEB, out), "w", encoding="utf-8") as f:
@@ -131,7 +195,8 @@ print(f"web/      {len(LESSONS)} fragments")
 # ================= 2) full site =================
 side, arts = [], []
 n = len(LESSONS)
-for i, (lid, num, title, src, out) in enumerate(LESSONS):
+current_module = None
+for i, (lid, num, title, src, out, module) in enumerate(LESSONS):
     body = convert(src)
     prev = (f'<a class="pn prev" href="#{LESSONS[i-1][0]}"><span>Previous</span>'
             f'<b>{LESSONS[i-1][2]}</b></a>') if i > 0 else '<span></span>'
@@ -139,6 +204,9 @@ for i, (lid, num, title, src, out) in enumerate(LESSONS):
            f'<b>{LESSONS[i+1][2]}</b></a>') if i < n - 1 else ''
     arts.append(f'<article class="ddc lesson" id="{lid}" data-idx="{i}">\n{body}\n'
                 f'<nav class="pn-row">{prev}{nxt}</nav>\n</article>')
+    if module != current_module:
+        side.append(f'<div class="side-group">{module}</div>')
+        current_module = module
     side.append(f'<a class="nav-link" href="#{lid}" data-target="{lid}">'
                 f'<span class="nav-num">{num}</span><span class="nav-title">{title}</span>'
                 f'<span class="nav-check">✓</span></a>')
@@ -162,6 +230,8 @@ a{color:var(--accent);}
 .wrap{display:grid;grid-template-columns:256px minmax(0,1fr);max-width:1160px;margin:0 auto;}
 .sidebar{position:sticky;top:56px;align-self:start;height:calc(100vh - 56px);overflow-y:auto;padding:18px 12px;background:var(--sidebar);border-right:1px solid var(--border);}
 .side-label{font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:700;padding:0 10px 8px;}
+.side-group{font-size:.64rem;letter-spacing:.11em;text-transform:uppercase;color:var(--accent);font-weight:800;padding:14px 10px 5px;margin-top:4px;border-top:1px solid var(--border);}
+.side-group:first-of-type{border-top:0;margin-top:0;}
 .nav-link{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;text-decoration:none;color:var(--text);font-size:.92rem;font-weight:600;margin-bottom:1px;}
 .nav-link:hover{background:var(--accent-weak);}
 .nav-link.active{background:var(--accent);color:#fff;}
@@ -185,7 +255,7 @@ a{color:var(--accent);}
 .pn b{color:var(--strong);font-size:.95rem;}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 __CONTENT__
-@media(max-width:900px){.wrap{grid-template-columns:1fr;}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border);display:flex;gap:6px;overflow-x:auto;padding:10px;}.side-label,.progress{display:none;}.nav-link{flex:none;margin:0;white-space:nowrap;}.nav-title{display:none;}.nav-num{width:auto;padding:0 8px;height:27px;}.content{padding:22px 16px 64px;}.ddc h1{font-size:1.6rem;}}
+@media(max-width:900px){.wrap{grid-template-columns:1fr;}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border);display:flex;gap:6px;overflow-x:auto;padding:10px;}.side-label,.side-group,.progress{display:none;}.nav-link{flex:none;margin:0;white-space:nowrap;}.nav-title{display:none;}.nav-num{width:auto;padding:0 8px;height:27px;}.content{padding:22px 16px 64px;}.ddc h1{font-size:1.6rem;}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
 </style>
 """.replace("__L__", TOKENS_LIGHT).replace("__D__", TOKENS_DARK).replace("__CONTENT__", CONTENT_CSS)

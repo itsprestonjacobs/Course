@@ -70,18 +70,7 @@ class Moderation(commands.Cog):
         deleted = await interaction.channel.purge(limit=amount)
         await interaction.followup.send(f"Deleted {len(deleted)} messages.", ephemeral=True)
 
-    @app_commands.command(description="Warn a member (sends them a DM).")
-    @app_commands.describe(member="Who to warn", reason="What for")
-    @app_commands.checks.has_permissions(moderate_members=True)
-    async def warn(self, interaction: discord.Interaction, member: discord.Member, reason: str):
-        embed = result_embed("Member Warned", member, interaction.user, reason, discord.Color.orange())
-        await interaction.response.send_message(embed=embed)
-
-        try:
-            await member.send(f"You were warned in **{interaction.guild.name}**: {reason}")
-        except discord.Forbidden:
-            # Their DMs are closed. Nothing we can do about that.
-            await interaction.followup.send("(Couldn't DM them — their DMs are closed.)", ephemeral=True)
+    # (/warn lives in cogs/warnings.py, which also saves warnings to a file.)
 
     # One handler for every command in this cog. Keeps the "you're not allowed"
     # message consistent instead of repeating it five times.

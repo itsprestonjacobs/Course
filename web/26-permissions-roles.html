@@ -1,80 +1,93 @@
 <section class="ddc">
-<h1>Troubleshooting</h1>
-<p>Almost every beginner hits the same handful of errors. Find yours here before pulling your
-hair out. The golden rule: <strong>read the last few red lines in your terminal</strong> — they almost
-always name the file and line.</p>
-<h2>Setup &amp; startup</h2>
-<p><strong><code>python</code> is not recognized</strong>
-Python isn't on your PATH. Reinstall Python and tick <strong>"Add Python to PATH"</strong> on the first
-installer screen.</p>
-<p><strong>Windows: "running scripts is disabled on this system"</strong>
-Run once, then activate the venv again:
-<code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code></p>
-<p><strong><code>ModuleNotFoundError: No module named 'discord'</code></strong>
-The library isn't installed in the environment you're using. Make sure <code>(venv)</code> shows in the
-terminal, then <code>pip install discord.py python-dotenv</code>.</p>
-<p><strong><code>No token found</code> / <code>LoginFailure: Improper token</code></strong>
-- Is there a file named exactly <code>.env</code> (not <code>env.txt</code>) next to <code>main.py</code>?
-- Does the line read <code>DISCORD_TOKEN=...</code> with your real token, no quotes or spaces?
-- If unsure, reset the token in the Developer Portal and paste the new one.</p>
-<p><strong><code>PrivilegedIntentsRequired</code></strong>
-You didn't switch the intents ON in the Developer Portal → your app → <strong>Bot</strong>. Enable
-<strong>Server Members</strong> and <strong>Message Content</strong>, save, and restart.</p>
-<h2>Commands</h2>
-<p><strong>Slash commands don't show up</strong>
-- Set <code>GUILD_ID</code> in <code>.env</code> to your test server's ID — commands then appear instantly.
-- Make sure you invited the bot with the <strong><code>applications.commands</code></strong> scope. If not,
-  re-invite with a new OAuth2 URL.
-- Fully close and reopen Discord (the list is cached).</p>
-<p><strong>"This interaction failed"</strong>
-The code errored before replying. Check the terminal for the red traceback. The usual
-culprit is a missing <strong><code>await</code></strong>, or replying twice to the same interaction.</p>
-<p><strong>"Unknown interaction" / took too long</strong>
-You didn't respond within <strong>3 seconds</strong>. Call <code>await interaction.response.defer()</code> first for
-slow commands, then <code>interaction.followup.send(...)</code>.</p>
-<p><strong><code>InteractionResponded</code> — already responded</strong>
-You called <code>interaction.response.send_message</code> twice. After the first response, use
-<code>interaction.followup.send(...)</code> instead.</p>
-<h2>Moderation &amp; roles</h2>
-<p><strong>"Missing Permissions" when a command runs</strong>
-Discord is refusing the <strong>bot</strong>, not you. Two fixes:
-- The bot's role must be <strong>above</strong> the member it's acting on — drag it up in Server Settings
-  → Roles.
-- The bot must actually have the permission — re-invite with the box checked.</p>
-<p><strong><code>/warn</code> couldn't DM the member</strong>
-Their DMs are closed. Expected — the warning still posts in the channel.</p>
-<p><strong>A role won't get added</strong>
-The bot needs <strong>Manage Roles</strong>, and its role must sit <strong>above</strong> the role it's handing out.</p>
-<h2>Components (buttons / dropdowns / modals)</h2>
-<p><strong>Buttons/dropdown stop working after a restart</strong>
-They're not persistent. Add <code>timeout=None</code>, a <code>custom_id</code> on every component, and
-<code>self.bot.add_view(...)</code> in the cog's <code>cog_load</code>.</p>
-<p><strong>"This interaction failed" on a button</strong>
-Same as commands — the callback errored (check the terminal) or didn't respond. A callback
-must call <code>interaction.response.send_message(...)</code> (or <code>defer</code>, <code>edit_message</code>, <code>send_modal</code>).</p>
-<h2>Data</h2>
-<p><strong>JSON <code>KeyError</code></strong>
-You read a key that doesn't exist. Use <code>.get(key, default)</code> instead of <code>data[key]</code>, and
-remember JSON keys are <strong>strings</strong> — use <code>str(user_id)</code>.</p>
-<p><strong>Data resets every restart</strong>
-You're changing the dictionary in memory but never calling <code>save()</code>. Save after every
-change.</p>
-<p><strong>SQLite changes don't stick</strong>
-You forgot <code>conn.commit()</code> after an <code>INSERT</code>/<code>UPDATE</code>.</p>
-<h2>Auto-moderation / message events</h2>
-<p><strong><code>on_message</code> never fires</strong>
-The <strong>Message Content Intent</strong> is off (portal <em>and</em> code: <code>intents.message_content = True</code>).</p>
-<p><strong>The bot reacts to its own messages / loops forever</strong>
-Always start message listeners with <code>if message.author.bot: return</code>.</p>
-<p><strong>Prefix commands stopped working after I added on_message</strong>
-End your <code>on_message</code> with <code>await bot.process_commands(message)</code>.</p>
-<h2>Still stuck?</h2>
+<h1>Permissions &amp; Role Hierarchy</h1>
+<p>Before we write moderation commands, we need to understand two things Discord cares about a
+lot: who's <em>allowed</em> to run a command, and whether the bot is <em>ranked high enough</em> to act.
+Getting these clear now prevents the most frustrating bugs in the whole course.</p>
+<h2>Locking a command to staff</h2>
+<p>You don't want just anyone running <code>/ban</code>. discord.py can gate a command behind a Discord
+permission with one decorator:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">discord</span><span class="w"> </span><span class="kn">import</span> <span class="n">app_commands</span>
+
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;A staff-only command.&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">ban_members</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">staff_only</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="s2">&quot;You&#39;re staff! ✅&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p><code>@app_commands.checks.has_permissions(ban_members=True)</code> means: only members who have the
+<strong>Ban Members</strong> permission can use this command. Everyone else is refused automatically —
+you write no extra code for that.</p>
+<p>Common permission checks:</p>
+<div class="codehilite"><pre><span></span><code><span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">kick_members</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">manage_messages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">moderate_members</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   <span class="c1"># timeouts</span>
+<span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">manage_roles</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">manage_guild</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>       <span class="c1"># server-wide admin tasks</span>
+</code></pre></div>
+
+<h2>Handling the refusal nicely</h2>
+<p>When someone without permission tries the command, discord.py raises a
+<code>MissingPermissions</code> error. Catch it per-cog so the message is friendly:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">cog_app_command_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">app_commands</span><span class="o">.</span><span class="n">MissingPermissions</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;You don&#39;t have permission to use that command.&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Something went wrong: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+            <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">followup</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Put this method in any moderation cog and every command in it gets the clean refusal for
+free.</p>
+<h2>Role hierarchy — the #1 gotcha</h2>
+<p>Discord has a strict rule: <strong>you can only act on members ranked <em>below</em> you.</strong> This applies
+to the bot too. The bot can only kick/ban/timeout members whose highest role is <strong>below the
+bot's own highest role</strong>.</p>
+<p>Two consequences:</p>
 <ol>
-<li>Read the <strong>terminal</strong> — the traceback names the file and line.</li>
-<li>Compare your file against the working version in the <code>bot/</code> folder.</li>
-<li>Search the exact error text — you're rarely the first to hit it.</li>
-<li>Check the official docs at <strong>discordpy.readthedocs.io</strong>.</li>
+<li><strong>Drag the bot's role near the top</strong> of Server Settings → Roles. If the bot's role is at
+   the bottom, it can't moderate anyone.</li>
+<li><strong>Check hierarchy in your code</strong> so a mod can't act on someone equal or above them:</li>
 </ol>
+<div class="codehilite"><pre><span></span><code><span class="k">if</span> <span class="n">member</span><span class="o">.</span><span class="n">top_role</span> <span class="o">&gt;=</span> <span class="n">interaction</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">top_role</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span>
+        <span class="s2">&quot;You can&#39;t act on someone ranked equal to or above you.&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span>
+</code></pre></div>
+
+<p><code>member.top_role</code> is a member's highest role; roles compare with <code>&gt;</code> and <code>&lt;</code> by position.</p>
+<h2>The two failure modes, side by side</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"You don't have permission"</td>
+<td><em>the user</em> lacks the permission</td>
+<td>intended — they're not staff</td>
+</tr>
+<tr>
+<td>"Missing Permissions" <em>when the command runs</em></td>
+<td><em>the bot</em> is ranked too low or lacks the permission</td>
+<td>drag bot role up / re-invite with the permission</td>
+</tr>
+</tbody>
+</table>
+<p>Keep this table handy — it explains almost every moderation problem.</p>
+<h2>Recap</h2>
+<ul>
+<li>Gate commands with <code>@app_commands.checks.has_permissions(...)</code>.</li>
+<li>Catch <code>MissingPermissions</code> in <code>cog_app_command_error</code> for a friendly refusal.</li>
+<li><strong>Role hierarchy:</strong> the bot (and each mod) can only act on members ranked below them —
+  drag the bot's role up and check <code>top_role</code> in code.</li>
+</ul>
 </section>
 <style>
 .ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}

@@ -1,7 +1,7 @@
 # Derpy's Designs — Reference Bot
 
-This is the **finished bot** students are building toward. Every code snippet in the
-lessons comes from these files, so learners can always compare their work against it.
+This is the **finished bot** students build toward across the course. Every code snippet in
+the lessons comes from these files, so learners can always compare their work against it.
 
 ## Run it
 
@@ -9,45 +9,62 @@ lessons comes from these files, so learners can always compare their work agains
    ```
    pip install -r requirements.txt
    ```
-2. Copy `.env.example` to `.env` and paste your bot token (see Lesson 03 for how to get one).
+2. Copy `.env.example` to `.env` and paste your bot token (see the "Register Your Bot"
+   lesson).
 3. Start the bot:
    ```
    python main.py
    ```
-   You should see `Logged in as ...` in the terminal.
+   You should see `Logged in as ...` and `Synced N commands`.
 
-> **Tip:** Set `GUILD_ID` in your `.env` to your test server's ID. Slash commands then
-> appear instantly instead of taking up to an hour to register globally.
+> **Tip:** Set `GUILD_ID` in `.env` to your test server's ID so slash commands appear
+> instantly instead of taking up to an hour.
 
 ## What's inside
 
-| File | What it does |
-|------|--------------|
-| `main.py` | Starts the bot, loads the cogs, syncs slash commands |
-| `cogs/embeds.py` | `/serverinfo`, `/announce` — building rich embeds |
-| `cogs/moderation.py` | `/kick`, `/ban`, `/timeout`, `/purge`, `/warn` with permission checks |
-| `cogs/tickets.py` | `/ticketpanel` + Open/Close buttons that create private ticket channels |
+| File | What it covers |
+|------|----------------|
+| `main.py` | Starts the bot, loads every cog, syncs slash commands |
+| `config.py` | Branding: studio name, color, banners, `branded_embed()`, `panel()` |
+| `data.py` | Tiny JSON load/save helper |
+| `settings.py` | Per-server settings (welcome/log channels) |
+| `economy_db.py` | SQLite layer for the economy system |
+| `cogs/general.py` | `/ping`, `/help` |
+| `cogs/embeds.py` | `/serverinfo`, `/announce` |
+| `cogs/moderation.py` | `/kick`, `/ban`, `/timeout`, `/purge` |
+| `cogs/warnings.py` | `/warn`, `/warnings`, `/clearwarns` (saved to JSON) |
+| `cogs/welcome.py` | Welcome & leave messages + auto "Member" role |
+| `cogs/roles.py` | `/rolemenu` — button self-roles |
+| `cogs/automod.py` | Word filter, invite blocking, anti-spam |
+| `cogs/logs.py` | Mod-log for deletes, edits, joins, leaves |
+| `cogs/economy.py` | `/balance`, `/daily`, `/pay`, `/leaderboard`, XP & levels |
+| `cogs/tickets.py` | `/ticketpanel` — dropdown tickets with transcripts |
+| `cogs/botsettings.py` | `/set_welcome`, `/set_logs` |
+
+## Server setup
+
+- Create a role named **Staff** (or set `STAFF_ROLE_NAME` in `.env`) — it can see tickets.
+- Optional channels: **welcome**, **mod-logs**, **ticket-logs** (or set them with
+  `/set_welcome` and `/set_logs`).
+- Create roles named **Announcements**, **Events**, **Updates** for the role menu, and
+  optionally a **Member** role for auto-assign.
+- Drag the bot's role **above** the members/roles it manages, or Discord will refuse the
+  action.
 
 ## Test checklist
 
-Do this in a **test server you own** so you can't break anything real.
+Do this in a **test server you own**.
 
-- [ ] Bot comes online (green dot) and the terminal prints `Synced N commands`.
-- [ ] `/ping`-style embed: run `/serverinfo` — you get an embed with member/channel counts.
-- [ ] `/announce title:Hello message:World` posts an embed.
-- [ ] `/kick` on a test alt works; running it without the Kick Members permission is refused.
-- [ ] `/timeout minutes:1` mutes a member for a minute.
-- [ ] `/purge amount:5` deletes the last 5 messages.
-- [ ] `/ticketpanel` posts the panel. Clicking **Open Ticket** creates a private
-      `ticket-<id>` channel only you and Staff can see.
-- [ ] Clicking **Close** deletes the channel (and drops a transcript in `#ticket-logs`
-      if that channel exists).
-- [ ] Restart the bot, then click **Open Ticket** again — it still works (persistent views).
+- [ ] Bot comes online and prints `Synced N commands`.
+- [ ] `/ping` and `/help` work.
+- [ ] `/serverinfo` and `/announce` post embeds.
+- [ ] `/kick`, `/timeout minutes:1`, `/purge amount:5` work; refused without permission.
+- [ ] `/warn`, `/warnings`, `/clearwarns` — warnings persist across a restart.
+- [ ] `/rolemenu` posts buttons that toggle roles.
+- [ ] Auto-mod deletes a test banned word and invite links.
+- [ ] Chatting earns XP/coins; `/balance`, `/daily`, `/pay`, `/leaderboard` work.
+- [ ] `/ticketpanel` → pick a category → private channel → **Close** saves a transcript.
+- [ ] Restart the bot; ticket panel and role menu still work (persistent views).
 
-## Server setup notes
-
-- Create a role called **Staff** (or change `STAFF_ROLE_NAME` in `.env`) — that role can
-  see and manage tickets.
-- Optionally create a channel called **ticket-logs** to receive closed-ticket transcripts.
-- The bot's own role must be **above** the members it moderates, or Discord will refuse
-  the action. Drag it up in Server Settings → Roles.
+> The bot generates `economy.db`, `warnings.json`, and `settings.json` at runtime. These are
+> git-ignored — don't commit them.

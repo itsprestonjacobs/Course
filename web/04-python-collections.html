@@ -1,80 +1,92 @@
 <section class="ddc">
-<h1>Troubleshooting</h1>
-<p>Almost every beginner hits the same handful of errors. Find yours here before pulling your
-hair out. The golden rule: <strong>read the last few red lines in your terminal</strong> — they almost
-always name the file and line.</p>
-<h2>Setup &amp; startup</h2>
-<p><strong><code>python</code> is not recognized</strong>
-Python isn't on your PATH. Reinstall Python and tick <strong>"Add Python to PATH"</strong> on the first
-installer screen.</p>
-<p><strong>Windows: "running scripts is disabled on this system"</strong>
-Run once, then activate the venv again:
-<code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code></p>
-<p><strong><code>ModuleNotFoundError: No module named 'discord'</code></strong>
-The library isn't installed in the environment you're using. Make sure <code>(venv)</code> shows in the
-terminal, then <code>pip install discord.py python-dotenv</code>.</p>
-<p><strong><code>No token found</code> / <code>LoginFailure: Improper token</code></strong>
-- Is there a file named exactly <code>.env</code> (not <code>env.txt</code>) next to <code>main.py</code>?
-- Does the line read <code>DISCORD_TOKEN=...</code> with your real token, no quotes or spaces?
-- If unsure, reset the token in the Developer Portal and paste the new one.</p>
-<p><strong><code>PrivilegedIntentsRequired</code></strong>
-You didn't switch the intents ON in the Developer Portal → your app → <strong>Bot</strong>. Enable
-<strong>Server Members</strong> and <strong>Message Content</strong>, save, and restart.</p>
-<h2>Commands</h2>
-<p><strong>Slash commands don't show up</strong>
-- Set <code>GUILD_ID</code> in <code>.env</code> to your test server's ID — commands then appear instantly.
-- Make sure you invited the bot with the <strong><code>applications.commands</code></strong> scope. If not,
-  re-invite with a new OAuth2 URL.
-- Fully close and reopen Discord (the list is cached).</p>
-<p><strong>"This interaction failed"</strong>
-The code errored before replying. Check the terminal for the red traceback. The usual
-culprit is a missing <strong><code>await</code></strong>, or replying twice to the same interaction.</p>
-<p><strong>"Unknown interaction" / took too long</strong>
-You didn't respond within <strong>3 seconds</strong>. Call <code>await interaction.response.defer()</code> first for
-slow commands, then <code>interaction.followup.send(...)</code>.</p>
-<p><strong><code>InteractionResponded</code> — already responded</strong>
-You called <code>interaction.response.send_message</code> twice. After the first response, use
-<code>interaction.followup.send(...)</code> instead.</p>
-<h2>Moderation &amp; roles</h2>
-<p><strong>"Missing Permissions" when a command runs</strong>
-Discord is refusing the <strong>bot</strong>, not you. Two fixes:
-- The bot's role must be <strong>above</strong> the member it's acting on — drag it up in Server Settings
-  → Roles.
-- The bot must actually have the permission — re-invite with the box checked.</p>
-<p><strong><code>/warn</code> couldn't DM the member</strong>
-Their DMs are closed. Expected — the warning still posts in the channel.</p>
-<p><strong>A role won't get added</strong>
-The bot needs <strong>Manage Roles</strong>, and its role must sit <strong>above</strong> the role it's handing out.</p>
-<h2>Components (buttons / dropdowns / modals)</h2>
-<p><strong>Buttons/dropdown stop working after a restart</strong>
-They're not persistent. Add <code>timeout=None</code>, a <code>custom_id</code> on every component, and
-<code>self.bot.add_view(...)</code> in the cog's <code>cog_load</code>.</p>
-<p><strong>"This interaction failed" on a button</strong>
-Same as commands — the callback errored (check the terminal) or didn't respond. A callback
-must call <code>interaction.response.send_message(...)</code> (or <code>defer</code>, <code>edit_message</code>, <code>send_modal</code>).</p>
-<h2>Data</h2>
-<p><strong>JSON <code>KeyError</code></strong>
-You read a key that doesn't exist. Use <code>.get(key, default)</code> instead of <code>data[key]</code>, and
-remember JSON keys are <strong>strings</strong> — use <code>str(user_id)</code>.</p>
-<p><strong>Data resets every restart</strong>
-You're changing the dictionary in memory but never calling <code>save()</code>. Save after every
-change.</p>
-<p><strong>SQLite changes don't stick</strong>
-You forgot <code>conn.commit()</code> after an <code>INSERT</code>/<code>UPDATE</code>.</p>
-<h2>Auto-moderation / message events</h2>
-<p><strong><code>on_message</code> never fires</strong>
-The <strong>Message Content Intent</strong> is off (portal <em>and</em> code: <code>intents.message_content = True</code>).</p>
-<p><strong>The bot reacts to its own messages / loops forever</strong>
-Always start message listeners with <code>if message.author.bot: return</code>.</p>
-<p><strong>Prefix commands stopped working after I added on_message</strong>
-End your <code>on_message</code> with <code>await bot.process_commands(message)</code>.</p>
-<h2>Still stuck?</h2>
-<ol>
-<li>Read the <strong>terminal</strong> — the traceback names the file and line.</li>
-<li>Compare your file against the working version in the <code>bot/</code> folder.</li>
-<li>Search the exact error text — you're rarely the first to hit it.</li>
-<li>Check the official docs at <strong>discordpy.readthedocs.io</strong>.</li>
-</ol>
+<h1>Python: Lists &amp; Dictionaries</h1>
+<p>Single variables hold one value. Real programs juggle <em>collections</em> of values — a list of
+members, a mapping of user → score. These two structures show up constantly in bot code.</p>
+<h2>Lists — an ordered row of values</h2>
+<p>A <strong>list</strong> holds many values in order, written with square brackets:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">fruits</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;banana&quot;</span><span class="p">,</span> <span class="s2">&quot;cherry&quot;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">fruits</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>     <span class="c1"># apple  (counting starts at 0!)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">fruits</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>     <span class="c1"># banana</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fruits</span><span class="p">))</span>   <span class="c1"># 3</span>
+</code></pre></div>
+
+<p>The <code>[0]</code> is an <strong>index</strong>. The first item is <code>0</code>, the second is <code>1</code>, and so on.</p>
+<h3>Changing a list</h3>
+<div class="codehilite"><pre><span></span><code><span class="n">fruits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;orange&quot;</span><span class="p">)</span>    <span class="c1"># add to the end</span>
+<span class="n">fruits</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;banana&quot;</span><span class="p">)</span>    <span class="c1"># remove by value</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">fruits</span><span class="p">)</span>              <span class="c1"># [&#39;apple&#39;, &#39;cherry&#39;, &#39;orange&#39;]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;apple&quot;</span> <span class="ow">in</span> <span class="n">fruits</span><span class="p">)</span>   <span class="c1"># True  — is it in there?</span>
+</code></pre></div>
+
+<p><code>in</code> is super handy — we'll use it for things like "is this word in the banned-words list?"</p>
+<h2>Dictionaries — labeled values (key → value)</h2>
+<p>A <strong>dictionary</strong> stores values under names (keys) instead of positions. Written with curly
+braces:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">user</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Derpy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">&quot;coins&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>    <span class="c1"># Derpy</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">])</span>   <span class="c1"># 5</span>
+</code></pre></div>
+
+<h3>Changing a dictionary</h3>
+<div class="codehilite"><pre><span></span><code><span class="n">user</span><span class="p">[</span><span class="s2">&quot;coins&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">250</span>          <span class="c1"># update a value</span>
+<span class="n">user</span><span class="p">[</span><span class="s2">&quot;badge&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;VIP&quot;</span>        <span class="c1"># add a new key</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;badge&quot;</span> <span class="ow">in</span> <span class="n">user</span><span class="p">)</span>       <span class="c1"># True</span>
+</code></pre></div>
+
+<p>Dictionaries are how bots remember things: <code>warnings = {user_id: 3}</code> means "this user has 3
+warnings." An economy system is basically one big dictionary of <code>user → coins</code>.</p>
+<h2>Looping through collections (preview)</h2>
+<p>You'll learn loops properly soon, but here's the shape:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">for</span> <span class="n">fruit</span> <span class="ow">in</span> <span class="n">fruits</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">fruit</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">user</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h2>Getting a value safely</h2>
+<p>If you ask a dictionary for a missing key, it errors. <code>.get()</code> avoids that by giving a
+fallback:</p>
+<div class="codehilite"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;coins&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>    <span class="c1"># 250</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gems&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>     <span class="c1"># 0  — &quot;gems&quot; doesn&#39;t exist, so we get the default</span>
+</code></pre></div>
+
+<p>We'll lean on <code>.get()</code> a lot so the bot doesn't crash on new users.</p>
+<h2>Practice</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">scores</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Sam&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;Alex&quot;</span><span class="p">:</span> <span class="mi">25</span><span class="p">}</span>
+<span class="n">scores</span><span class="p">[</span><span class="s2">&quot;Jordan&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">scores</span><span class="p">[</span><span class="s2">&quot;Sam&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">5</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Taylor&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</code></pre></div>
+
+<p><strong>Challenge:</strong> make a list called <code>staff</code> with three names, add a fourth with <code>.append()</code>,
+and print <code>True</code>/<code>False</code> for whether <code>"Admin"</code> is in the list.</p>
+<details><summary>Solution</summary>
+
+
+<div class="codehilite"><pre><span></span><code><span class="n">staff</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Sam&quot;</span><span class="p">,</span> <span class="s2">&quot;Alex&quot;</span><span class="p">,</span> <span class="s2">&quot;Jordan&quot;</span><span class="p">]</span>
+<span class="n">staff</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Taylor&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Admin&quot;</span> <span class="ow">in</span> <span class="n">staff</span><span class="p">)</span>   <span class="c1"># False</span>
+</code></pre></div>
+
+
+</details>
+
+<h2>Recap</h2>
+<ul>
+<li><strong>Lists</strong> <code>[...]</code> hold ordered values; access by index <code>[0]</code>; <code>.append()</code>, <code>.remove()</code>,
+  and <code>in</code>.</li>
+<li><strong>Dictionaries</strong> <code>{key: value}</code> map names to values; <code>.get(key, default)</code> is the safe way
+  to read.</li>
+<li>Both are how a bot <strong>remembers</strong> data.</li>
+</ul>
 </section>
 <style>
 .ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}

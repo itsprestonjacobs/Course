@@ -1,0 +1,270 @@
+<section class="ddc">
+<h1>Databases with SQLite</h1>
+<p>JSON is great for small data. But when you have thousands of records, or need to ask
+questions like "who are the top 10 richest members?", a <strong>database</strong> is the right tool.
+<strong>SQLite</strong> is a database built right into Python — no server to install, just a file.</p>
+<h2>What a database gives you</h2>
+<ul>
+<li><strong>Tables</strong> — like spreadsheets: rows and columns.</li>
+<li><strong>Speed</strong> — it can search and sort huge amounts of data instantly.</li>
+<li><strong>Safety</strong> — it handles many changes at once without corrupting the file.</li>
+</ul>
+<p>We'll build the storage layer for an economy system: a table of users and their coins.</p>
+<h2>The three things you'll do</h2>
+<p>Talking to SQLite is always the same shape: <strong>connect</strong>, run a <strong>query</strong>, <strong>commit</strong> if you
+changed something.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">sqlite3</span>
+
+<span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;economy.db&quot;</span><span class="p">)</span>
+<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+<span class="c1"># Create a table (only needs to happen once; &quot;IF NOT EXISTS&quot; makes it safe to re-run)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    CREATE TABLE IF NOT EXISTS balances (</span>
+<span class="s2">        user_id INTEGER PRIMARY KEY,</span>
+<span class="s2">        coins INTEGER DEFAULT 0</span>
+<span class="s2">    )</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</code></pre></div>
+
+<p><code>CREATE TABLE</code> defines the columns. <code>user_id</code> is the <strong>primary key</strong> (unique per user);
+<code>coins</code> defaults to 0.</p>
+<h2>The four core operations</h2>
+<p>SQL is the language you use. You only need four commands to start:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># INSERT — add a new row</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT OR IGNORE INTO balances (user_id) VALUES (?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">user_id</span><span class="p">,))</span>
+
+<span class="c1"># SELECT — read data</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT coins FROM balances WHERE user_id = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">user_id</span><span class="p">,))</span>
+<span class="n">row</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>          <span class="c1"># one row, e.g. (100,)  — or None if not found</span>
+
+<span class="c1"># UPDATE — change a row</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;UPDATE balances SET coins = coins + ? WHERE user_id = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">user_id</span><span class="p">))</span>
+
+<span class="c1"># ...and always commit changes:</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</code></pre></div>
+
+<blockquote>
+<p>🔒 See the <code>?</code> placeholders? <strong>Always</strong> pass values as that second tuple, never by
+building the string yourself with f-strings. It's safer (prevents "SQL injection") and
+handles types for you. This is the one SQL habit to lock in early.</p>
+</blockquote>
+<h2>A clean data layer</h2>
+<p>Wrap it in a small helper file, <code>db.py</code>, so your cogs stay tidy:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">sqlite3</span>
+
+<span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;economy.db&quot;</span><span class="p">)</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;CREATE TABLE IF NOT EXISTS balances (user_id INTEGER PRIMARY KEY, coins INTEGER DEFAULT 0)&quot;</span><span class="p">)</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_coins</span><span class="p">(</span><span class="n">user_id</span><span class="p">):</span>
+    <span class="n">row</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT coins FROM balances WHERE user_id = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">user_id</span><span class="p">,))</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">row</span> <span class="k">else</span> <span class="mi">0</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">add_coins</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="p">):</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT OR IGNORE INTO balances (user_id) VALUES (?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">user_id</span><span class="p">,))</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;UPDATE balances SET coins = coins + ? WHERE user_id = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">amount</span><span class="p">,</span> <span class="n">user_id</span><span class="p">))</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">top_users</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="s2">&quot;SELECT user_id, coins FROM balances ORDER BY coins DESC LIMIT ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">limit</span><span class="p">,)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Now a cog just calls <code>db.get_coins(id)</code> or <code>db.add_coins(id, 50)</code> — no SQL in sight.</p>
+<h2>Using it in a command</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">db</span>
+
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Check your coins.&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
+        <span class="n">coins</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_coins</span><span class="p">(</span><span class="n">interaction</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;💰 You have **</span><span class="si">{</span><span class="n">coins</span><span class="si">}</span><span class="s2">** coins.&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p><code>top_users()</code> is the payoff — a leaderboard, sorted by coins, in one query. Try doing <em>that</em>
+efficiently with a JSON file and you'll appreciate databases.</p>
+<h2>JSON or SQLite — which should I use?</h2>
+<table>
+<thead>
+<tr>
+<th>Use JSON when…</th>
+<th>Use SQLite when…</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a few hundred records</td>
+<td>thousands+ of records</td>
+</tr>
+<tr>
+<td>simple settings/config</td>
+<td>you need sorting/searching (leaderboards!)</td>
+</tr>
+<tr>
+<td>you're just starting out</td>
+<td>data changes constantly from many places</td>
+</tr>
+</tbody>
+</table>
+<p>Both are valid. Start with whichever feels comfortable; you can always migrate later.</p>
+<h2>Practice</h2>
+<p><strong>Challenge:</strong> add a <code>remove_coins(user_id, amount)</code> function to <code>db.py</code> that subtracts coins
+(don't let it go below zero — hint: <code>MAX(0, coins - ?)</code> won't work simply; instead check the
+balance first in Python).</p>
+<details><summary>Solution</summary>
+
+
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_coins</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="p">):</span>
+    <span class="n">current</span> <span class="o">=</span> <span class="n">get_coins</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+    <span class="n">new</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">current</span> <span class="o">-</span> <span class="n">amount</span><span class="p">)</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT OR IGNORE INTO balances (user_id) VALUES (?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">user_id</span><span class="p">,))</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;UPDATE balances SET coins = ? WHERE user_id = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="n">user_id</span><span class="p">))</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</code></pre></div>
+
+
+</details>
+
+<h2>Recap</h2>
+<ul>
+<li><strong>SQLite</strong> is a file-based database built into Python (<code>import sqlite3</code>).</li>
+<li>Pattern: <strong>connect → execute a query → commit</strong> (for changes).</li>
+<li>Use <code>?</code> placeholders for values — never f-strings — for safety.</li>
+<li>Wrap SQL in a <code>db.py</code> helper; databases shine for leaderboards and lots of data.</li>
+</ul>
+</section>
+<style>
+.ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}
+.ddc *{box-sizing:border-box;}
+@media (prefers-color-scheme:dark){.ddc{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#1e9bff;--accent-weak:rgba(30,155,255,.13);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}}
+
+.ddc h1{font-size:1.95rem;line-height:1.2;margin:.1em 0 .15em;letter-spacing:-.01em;color:var(--strong);font-weight:800;}
+.ddc h2{font-size:1.35rem;margin:1.9em 0 .5em;padding-top:1em;border-top:1px solid var(--border);color:var(--strong);font-weight:700;}
+.ddc h3{font-size:1.1rem;margin:1.5em 0 .35em;color:var(--strong);font-weight:700;}
+.ddc p,.ddc li{font-size:1.005rem;}
+.ddc a{color:var(--accent);font-weight:600;text-decoration:none;}
+.ddc a:hover{text-decoration:underline;}
+.ddc strong{color:var(--strong);font-weight:700;}
+.ddc hr{border:0;height:1px;background:var(--border);margin:2.1em 0;}
+.ddc ul,.ddc ol{padding-left:1.3em;}.ddc li{margin:.3em 0;}
+.ddc :not(pre)>code{background:var(--code-inline);color:var(--code-inline-fg);padding:.12em .4em;border-radius:4px;font-size:.9em;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;}
+.ddc table{border-collapse:collapse;width:100%;margin:1.1em 0;font-size:.93rem;display:block;overflow-x:auto;}
+.ddc th,.ddc td{border:1px solid var(--border);padding:.55em .75em;text-align:left;}
+.ddc th{background:var(--panel);color:var(--strong);font-weight:700;}
+.ddc blockquote{margin:1.25em 0;padding:.8em 1em;border-left:3px solid var(--accent);background:var(--accent-weak);border-radius:0 4px 4px 0;}
+.ddc blockquote.warn{border-left-color:var(--warn);background:var(--warn-weak);}
+.ddc blockquote.good{border-left-color:var(--good);background:var(--good-weak);}
+.ddc blockquote p{margin:.3em 0;}
+.ddc .codehilite{position:relative;background:var(--code-bg);border:1px solid var(--code-border);border-radius:6px;margin:1.1em 0;}
+.ddc .codehilite pre{margin:0;padding:14px 15px;overflow-x:auto;font-size:.875rem;line-height:1.55;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;}
+.ddc .copy-btn{position:absolute;top:7px;right:7px;background:rgba(255,255,255,.07);color:#cdd6e4;border:1px solid rgba(255,255,255,.14);border-radius:5px;font-size:.72rem;padding:3px 9px;cursor:pointer;font-weight:700;opacity:0;transition:opacity .12s;}
+.ddc .codehilite:hover .copy-btn,.ddc .copy-btn:focus{opacity:1;}
+.ddc .copy-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.ddc .copy-btn.done{background:var(--good);color:#fff;border-color:var(--good);opacity:1;}
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.ddc .codehilite .hll { background-color: #ffffcc }
+.ddc .codehilite { background: #282C34; color: #ABB2BF }
+.ddc .codehilite .c { color: #7F848E } /* Comment */
+.ddc .codehilite .err { color: #ABB2BF } /* Error */
+.ddc .codehilite .esc { color: #ABB2BF } /* Escape */
+.ddc .codehilite .g { color: #ABB2BF } /* Generic */
+.ddc .codehilite .k { color: #C678DD } /* Keyword */
+.ddc .codehilite .l { color: #ABB2BF } /* Literal */
+.ddc .codehilite .n { color: #E06C75 } /* Name */
+.ddc .codehilite .o { color: #56B6C2 } /* Operator */
+.ddc .codehilite .x { color: #ABB2BF } /* Other */
+.ddc .codehilite .p { color: #ABB2BF } /* Punctuation */
+.ddc .codehilite .ch { color: #7F848E } /* Comment.Hashbang */
+.ddc .codehilite .cm { color: #7F848E } /* Comment.Multiline */
+.ddc .codehilite .cp { color: #7F848E } /* Comment.Preproc */
+.ddc .codehilite .cpf { color: #7F848E } /* Comment.PreprocFile */
+.ddc .codehilite .c1 { color: #7F848E } /* Comment.Single */
+.ddc .codehilite .cs { color: #7F848E } /* Comment.Special */
+.ddc .codehilite .gd { color: #E06C75 } /* Generic.Deleted */
+.ddc .codehilite .ge { color: #ABB2BF; font-style: italic } /* Generic.Emph */
+.ddc .codehilite .ges { color: #ABB2BF } /* Generic.EmphStrong */
+.ddc .codehilite .gr { color: #E06C75 } /* Generic.Error */
+.ddc .codehilite .gh { color: #ABB2BF; font-weight: bold } /* Generic.Heading */
+.ddc .codehilite .gi { color: #98C379 } /* Generic.Inserted */
+.ddc .codehilite .go { color: #E06C75 } /* Generic.Output */
+.ddc .codehilite .gp { color: #ABB2BF } /* Generic.Prompt */
+.ddc .codehilite .gs { color: #ABB2BF; font-weight: bold } /* Generic.Strong */
+.ddc .codehilite .gu { color: #ABB2BF; font-weight: bold } /* Generic.Subheading */
+.ddc .codehilite .gt { color: #E06C75 } /* Generic.Traceback */
+.ddc .codehilite .kc { color: #E5C07B } /* Keyword.Constant */
+.ddc .codehilite .kd { color: #C678DD } /* Keyword.Declaration */
+.ddc .codehilite .kn { color: #C678DD } /* Keyword.Namespace */
+.ddc .codehilite .kp { color: #C678DD } /* Keyword.Pseudo */
+.ddc .codehilite .kr { color: #C678DD } /* Keyword.Reserved */
+.ddc .codehilite .kt { color: #E5C07B } /* Keyword.Type */
+.ddc .codehilite .ld { color: #ABB2BF } /* Literal.Date */
+.ddc .codehilite .m { color: #D19A66 } /* Literal.Number */
+.ddc .codehilite .s { color: #98C379 } /* Literal.String */
+.ddc .codehilite .na { color: #E06C75 } /* Name.Attribute */
+.ddc .codehilite .nb { color: #E5C07B } /* Name.Builtin */
+.ddc .codehilite .nc { color: #E5C07B } /* Name.Class */
+.ddc .codehilite .no { color: #E06C75 } /* Name.Constant */
+.ddc .codehilite .nd { color: #61AFEF } /* Name.Decorator */
+.ddc .codehilite .ni { color: #E06C75 } /* Name.Entity */
+.ddc .codehilite .ne { color: #E06C75 } /* Name.Exception */
+.ddc .codehilite .nf { color: #61AFEF; font-weight: bold } /* Name.Function */
+.ddc .codehilite .nl { color: #E06C75 } /* Name.Label */
+.ddc .codehilite .nn { color: #E06C75 } /* Name.Namespace */
+.ddc .codehilite .nx { color: #E06C75 } /* Name.Other */
+.ddc .codehilite .py { color: #E06C75 } /* Name.Property */
+.ddc .codehilite .nt { color: #E06C75 } /* Name.Tag */
+.ddc .codehilite .nv { color: #E06C75 } /* Name.Variable */
+.ddc .codehilite .ow { color: #56B6C2 } /* Operator.Word */
+.ddc .codehilite .pm { color: #ABB2BF } /* Punctuation.Marker */
+.ddc .codehilite .w { color: #ABB2BF } /* Text.Whitespace */
+.ddc .codehilite .mb { color: #D19A66 } /* Literal.Number.Bin */
+.ddc .codehilite .mf { color: #D19A66 } /* Literal.Number.Float */
+.ddc .codehilite .mh { color: #D19A66 } /* Literal.Number.Hex */
+.ddc .codehilite .mi { color: #D19A66 } /* Literal.Number.Integer */
+.ddc .codehilite .mo { color: #D19A66 } /* Literal.Number.Oct */
+.ddc .codehilite .sa { color: #98C379 } /* Literal.String.Affix */
+.ddc .codehilite .sb { color: #98C379 } /* Literal.String.Backtick */
+.ddc .codehilite .sc { color: #98C379 } /* Literal.String.Char */
+.ddc .codehilite .dl { color: #98C379 } /* Literal.String.Delimiter */
+.ddc .codehilite .sd { color: #98C379 } /* Literal.String.Doc */
+.ddc .codehilite .s2 { color: #98C379 } /* Literal.String.Double */
+.ddc .codehilite .se { color: #98C379 } /* Literal.String.Escape */
+.ddc .codehilite .sh { color: #98C379 } /* Literal.String.Heredoc */
+.ddc .codehilite .si { color: #98C379 } /* Literal.String.Interpol */
+.ddc .codehilite .sx { color: #98C379 } /* Literal.String.Other */
+.ddc .codehilite .sr { color: #98C379 } /* Literal.String.Regex */
+.ddc .codehilite .s1 { color: #98C379 } /* Literal.String.Single */
+.ddc .codehilite .ss { color: #98C379 } /* Literal.String.Symbol */
+.ddc .codehilite .bp { color: #E5C07B } /* Name.Builtin.Pseudo */
+.ddc .codehilite .fm { color: #56B6C2; font-weight: bold } /* Name.Function.Magic */
+.ddc .codehilite .vc { color: #E06C75 } /* Name.Variable.Class */
+.ddc .codehilite .vg { color: #E06C75 } /* Name.Variable.Global */
+.ddc .codehilite .vi { color: #E06C75 } /* Name.Variable.Instance */
+.ddc .codehilite .vm { color: #E06C75 } /* Name.Variable.Magic */
+.ddc .codehilite .il { color: #D19A66 } /* Literal.Number.Integer.Long */
+</style>
+<script>
+
+(function(){
+ function enhance(){
+  document.querySelectorAll('.ddc .codehilite:not([data-cp])').forEach(function(box){
+   box.setAttribute('data-cp','1');
+   var b=document.createElement('button');b.className='copy-btn';b.type='button';b.textContent='Copy';
+   b.addEventListener('click',function(){navigator.clipboard.writeText(box.querySelector('pre').innerText).then(function(){
+    b.textContent='Copied';b.classList.add('done');setTimeout(function(){b.textContent='Copy';b.classList.remove('done');},1300);});});
+   box.appendChild(b);});
+  document.querySelectorAll('.ddc blockquote:not([data-cl])').forEach(function(q){
+   q.setAttribute('data-cl','1');var c=q.textContent.trim().charAt(0);
+   if(c==='⚠')q.classList.add('warn');else if(c==='✅')q.classList.add('good');});
+ }
+ if(document.readyState!=='loading')enhance();else document.addEventListener('DOMContentLoaded',enhance);
+})();
+
+</script>

@@ -2,6 +2,12 @@
 .env
 bot/.env
 
+# Runtime data the bot generates
+*.db
+*.log
+settings.json
+warnings.json
+
 # Python
 __pycache__/
 *.pyc

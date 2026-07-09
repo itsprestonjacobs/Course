@@ -1,80 +1,82 @@
 <section class="ddc">
-<h1>Troubleshooting</h1>
-<p>Almost every beginner hits the same handful of errors. Find yours here before pulling your
-hair out. The golden rule: <strong>read the last few red lines in your terminal</strong> — they almost
-always name the file and line.</p>
-<h2>Setup &amp; startup</h2>
-<p><strong><code>python</code> is not recognized</strong>
-Python isn't on your PATH. Reinstall Python and tick <strong>"Add Python to PATH"</strong> on the first
-installer screen.</p>
-<p><strong>Windows: "running scripts is disabled on this system"</strong>
-Run once, then activate the venv again:
-<code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code></p>
-<p><strong><code>ModuleNotFoundError: No module named 'discord'</code></strong>
-The library isn't installed in the environment you're using. Make sure <code>(venv)</code> shows in the
-terminal, then <code>pip install discord.py python-dotenv</code>.</p>
-<p><strong><code>No token found</code> / <code>LoginFailure: Improper token</code></strong>
-- Is there a file named exactly <code>.env</code> (not <code>env.txt</code>) next to <code>main.py</code>?
-- Does the line read <code>DISCORD_TOKEN=...</code> with your real token, no quotes or spaces?
-- If unsure, reset the token in the Developer Portal and paste the new one.</p>
-<p><strong><code>PrivilegedIntentsRequired</code></strong>
-You didn't switch the intents ON in the Developer Portal → your app → <strong>Bot</strong>. Enable
-<strong>Server Members</strong> and <strong>Message Content</strong>, save, and restart.</p>
-<h2>Commands</h2>
-<p><strong>Slash commands don't show up</strong>
-- Set <code>GUILD_ID</code> in <code>.env</code> to your test server's ID — commands then appear instantly.
-- Make sure you invited the bot with the <strong><code>applications.commands</code></strong> scope. If not,
-  re-invite with a new OAuth2 URL.
-- Fully close and reopen Discord (the list is cached).</p>
-<p><strong>"This interaction failed"</strong>
-The code errored before replying. Check the terminal for the red traceback. The usual
-culprit is a missing <strong><code>await</code></strong>, or replying twice to the same interaction.</p>
-<p><strong>"Unknown interaction" / took too long</strong>
-You didn't respond within <strong>3 seconds</strong>. Call <code>await interaction.response.defer()</code> first for
-slow commands, then <code>interaction.followup.send(...)</code>.</p>
-<p><strong><code>InteractionResponded</code> — already responded</strong>
-You called <code>interaction.response.send_message</code> twice. After the first response, use
-<code>interaction.followup.send(...)</code> instead.</p>
-<h2>Moderation &amp; roles</h2>
-<p><strong>"Missing Permissions" when a command runs</strong>
-Discord is refusing the <strong>bot</strong>, not you. Two fixes:
-- The bot's role must be <strong>above</strong> the member it's acting on — drag it up in Server Settings
-  → Roles.
-- The bot must actually have the permission — re-invite with the box checked.</p>
-<p><strong><code>/warn</code> couldn't DM the member</strong>
-Their DMs are closed. Expected — the warning still posts in the channel.</p>
-<p><strong>A role won't get added</strong>
-The bot needs <strong>Manage Roles</strong>, and its role must sit <strong>above</strong> the role it's handing out.</p>
-<h2>Components (buttons / dropdowns / modals)</h2>
-<p><strong>Buttons/dropdown stop working after a restart</strong>
-They're not persistent. Add <code>timeout=None</code>, a <code>custom_id</code> on every component, and
-<code>self.bot.add_view(...)</code> in the cog's <code>cog_load</code>.</p>
-<p><strong>"This interaction failed" on a button</strong>
-Same as commands — the callback errored (check the terminal) or didn't respond. A callback
-must call <code>interaction.response.send_message(...)</code> (or <code>defer</code>, <code>edit_message</code>, <code>send_modal</code>).</p>
-<h2>Data</h2>
-<p><strong>JSON <code>KeyError</code></strong>
-You read a key that doesn't exist. Use <code>.get(key, default)</code> instead of <code>data[key]</code>, and
-remember JSON keys are <strong>strings</strong> — use <code>str(user_id)</code>.</p>
-<p><strong>Data resets every restart</strong>
-You're changing the dictionary in memory but never calling <code>save()</code>. Save after every
-change.</p>
-<p><strong>SQLite changes don't stick</strong>
-You forgot <code>conn.commit()</code> after an <code>INSERT</code>/<code>UPDATE</code>.</p>
-<h2>Auto-moderation / message events</h2>
-<p><strong><code>on_message</code> never fires</strong>
-The <strong>Message Content Intent</strong> is off (portal <em>and</em> code: <code>intents.message_content = True</code>).</p>
-<p><strong>The bot reacts to its own messages / loops forever</strong>
-Always start message listeners with <code>if message.author.bot: return</code>.</p>
-<p><strong>Prefix commands stopped working after I added on_message</strong>
-End your <code>on_message</code> with <code>await bot.process_commands(message)</code>.</p>
-<h2>Still stuck?</h2>
-<ol>
-<li>Read the <strong>terminal</strong> — the traceback names the file and line.</li>
-<li>Compare your file against the working version in the <code>bot/</code> folder.</li>
-<li>Search the exact error text — you're rarely the first to hit it.</li>
-<li>Check the official docs at <strong>discordpy.readthedocs.io</strong>.</li>
-</ol>
+<h1>Async &amp; Await</h1>
+<p>This is the one genuinely new idea in bot programming, so we give it its own lesson. Read
+slowly — once it clicks, all the Discord code that follows will make sense.</p>
+<h2>The problem it solves</h2>
+<p>A bot spends almost all its time <strong>waiting</strong> on the internet: waiting for a message,
+waiting for Discord to create a channel, waiting for a reply to send. If the bot froze
+solid every time it waited, it could only handle one thing at a time — one slow command
+would block everyone else.</p>
+<p><strong>Async</strong> lets the bot start something slow, and while it waits, go handle other things.
+It's like a waiter who takes your order and, instead of standing frozen at your table until
+the kitchen is done, goes and serves other tables in the meantime.</p>
+<h2>The two keywords</h2>
+<ul>
+<li><strong><code>async def</code></strong> marks a function that's <em>allowed to pause</em> while it waits.</li>
+<li><strong><code>await</code></strong> is the pause point — "wait here for this to finish, then continue."</li>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open_ticket</span><span class="p">():</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="k">await</span> <span class="n">guild</span><span class="o">.</span><span class="n">create_text_channel</span><span class="p">(</span><span class="s2">&quot;ticket-1&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;Ticket opened!&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Read it as: <em>create the channel (wait for it), then send a message in it (wait for that).</em></p>
+<h2>The one rule you must remember</h2>
+<blockquote>
+<p>Anything that talks to Discord needs <code>await</code> in front of it, and <code>await</code> can only be used
+inside a function defined with <code>async def</code>.</p>
+</blockquote>
+<p>Almost every discord.py action — <code>send</code>, <code>kick</code>, <code>ban</code>, <code>create_text_channel</code>,
+<code>response.send_message</code> — must be <code>await</code>ed.</p>
+<h2>The most common beginner bug</h2>
+<p>If you forget <code>await</code>, the code <strong>doesn't crash</strong> — it just silently doesn't do the thing:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;Hello!&quot;</span><span class="p">)</span>          <span class="c1"># ❌ nothing happens, no error</span>
+<span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;Hello!&quot;</span><span class="p">)</span>    <span class="c1"># ✅ actually sends</span>
+</code></pre></div>
+
+<p>So when a command "runs but does nothing," a missing <code>await</code> is the very first thing to
+check. Newer versions of Python may print a "coroutine was never awaited" warning to hint at
+this.</p>
+<h2>await gives you the result</h2>
+<p><code>await</code> doesn't just pause — it also hands back whatever the action produced:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">message</span> <span class="o">=</span> <span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;Hello!&quot;</span><span class="p">)</span>   <span class="c1"># message is now the sent message object</span>
+<span class="k">await</span> <span class="n">message</span><span class="o">.</span><span class="n">add_reaction</span><span class="p">(</span><span class="s2">&quot;👍&quot;</span><span class="p">)</span>          <span class="c1"># ...which we can react to</span>
+</code></pre></div>
+
+<h2>You won't write the loop yourself</h2>
+<p>There's an "event loop" running underneath that juggles all these paused functions. Good
+news: discord.py starts and manages it for you. You just write <code>async def</code> functions and
+sprinkle in <code>await</code> — the library handles the rest.</p>
+<h2>Practice (concept check)</h2>
+<p>Which of these will actually send a message? (Assume we're inside an <code>async def</code>.)</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># A</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;hi&quot;</span><span class="p">)</span>
+
+<span class="c1"># B</span>
+<span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;hi&quot;</span><span class="p">)</span>
+
+<span class="c1"># C</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">helper</span><span class="p">():</span>
+    <span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;hi&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<details><summary>Answer</summary>
+
+- **A** — no, missing `await`; nothing happens.
+- **B** — yes ✅.
+- **C** — no; it's a syntax error, because `await` is inside a plain `def`, not an
+  `async def`.
+</details>
+
+<h2>Recap</h2>
+<ul>
+<li>Bots wait a lot; <strong>async</strong> lets them stay responsive while waiting.</li>
+<li><code>async def</code> = a pausable function; <code>await</code> = the pause that also returns a result.</li>
+<li><strong>Rule:</strong> Discord actions need <code>await</code>, inside an <code>async def</code>.</li>
+<li>Forgot <code>await</code>? The action silently does nothing — check this first.</li>
+</ul>
+<p>🎉 <strong>That's all the Python you need.</strong> From here on it's all Discord. Next we bring your bot
+to life.</p>
 </section>
 <style>
 .ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}
