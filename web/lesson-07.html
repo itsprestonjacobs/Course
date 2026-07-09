@@ -1,0 +1,352 @@
+<section class="ddc">
+<h1>Lesson 07 — Ticket System</h1>
+<p>This is the big one. We're building the support-ticket panel you see on Derpy's Designs: a
+branded panel with a <strong>dropdown menu</strong>. When someone picks an option, the bot spins up a
+private channel only they and staff can see, with a <strong>Close</strong> button that saves a
+transcript and deletes the channel.</p>
+<p>It sounds like a lot, but we'll build it in small pieces and run as we go. New concept
+here: <strong>Views</strong> — the buttons and dropdowns you attach to a message.</p>
+<hr />
+<h2>Step 0 — Server prep</h2>
+<p>In your test server, create:
+- a <strong>role</strong> called <code>Staff</code> (this role will see tickets),
+- optionally a <strong>channel</strong> called <code>ticket-logs</code> (closed-ticket transcripts land here).</p>
+<hr />
+<h2>Step 1 — New cog, wired up</h2>
+<p>Make <code>cogs/tickets.py</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">discord</span><span class="w"> </span><span class="kn">import</span> <span class="n">app_commands</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">discord.ext</span><span class="w"> </span><span class="kn">import</span> <span class="n">commands</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">config</span><span class="w"> </span><span class="kn">import</span> <span class="n">BRAND_COLOR</span><span class="p">,</span> <span class="n">STUDIO_NAME</span><span class="p">,</span> <span class="n">BANNERS</span><span class="p">,</span> <span class="n">branded_embed</span><span class="p">,</span> <span class="n">panel</span>
+
+<span class="n">STAFF_ROLE_NAME</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;STAFF_ROLE_NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;Staff&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Tickets</span><span class="p">(</span><span class="n">commands</span><span class="o">.</span><span class="n">Cog</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bot</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bot</span> <span class="o">=</span> <span class="n">bot</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="n">bot</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">bot</span><span class="o">.</span><span class="n">add_cog</span><span class="p">(</span><span class="n">Tickets</span><span class="p">(</span><span class="n">bot</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Add it to <code>main.py</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">COGS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cogs.embeds&quot;</span><span class="p">,</span> <span class="s2">&quot;cogs.moderation&quot;</span><span class="p">,</span> <span class="s2">&quot;cogs.tickets&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+<p><strong>▶ Run it</strong> — should start with no errors.</p>
+<hr />
+<h2>Step 2 — The Close button (a View)</h2>
+<p>A <strong>View</strong> is a box that holds buttons/dropdowns. Let's make the simplest one: a single
+red <strong>Close</strong> button. Add this class <strong>above</strong> the <code>Tickets</code> class:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CloseTicket</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Close&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">discord</span><span class="o">.</span><span class="n">ButtonStyle</span><span class="o">.</span><span class="n">red</span><span class="p">,</span>
+                       <span class="n">emoji</span><span class="o">=</span><span class="s2">&quot;🔒&quot;</span><span class="p">,</span> <span class="n">custom_id</span><span class="o">=</span><span class="s2">&quot;ticket:close&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">,</span> <span class="n">button</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">Button</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="s2">&quot;Closing…&quot;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</code></pre></div>
+
+<ul>
+<li><code>timeout=None</code> keeps the button working forever (even after the bot restarts).</li>
+<li><code>@discord.ui.button(...)</code> turns the method below it into a clickable button.</li>
+<li><code>custom_id</code> is a permanent name for the button — we need it for the "works after restart"
+  trick later.</li>
+</ul>
+<p>We'll test this in a moment once tickets exist.</p>
+<hr />
+<h2>Step 3 — Creating the ticket channel</h2>
+<p>This is the heart of the system: make a private channel for the person who opened the
+ticket. Add this function <strong>above</strong> the <code>CloseTicket</code> class:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_ticket</span><span class="p">(</span><span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">guild</span> <span class="o">=</span> <span class="n">interaction</span><span class="o">.</span><span class="n">guild</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="n">interaction</span><span class="o">.</span><span class="n">user</span>
+
+    <span class="c1"># Don&#39;t let someone open a second ticket if they already have one.</span>
+    <span class="n">existing</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">guild</span><span class="o">.</span><span class="n">text_channels</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;ticket-</span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">existing</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;You already have a ticket open: </span><span class="si">{</span><span class="n">existing</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">staff_role</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">guild</span><span class="o">.</span><span class="n">roles</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">STAFF_ROLE_NAME</span><span class="p">)</span>
+
+    <span class="c1"># Hide from everyone; allow the author, staff, and the bot.</span>
+    <span class="n">overwrites</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">guild</span><span class="o">.</span><span class="n">default_role</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">PermissionOverwrite</span><span class="p">(</span><span class="n">view_channel</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">author</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">PermissionOverwrite</span><span class="p">(</span><span class="n">view_channel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">send_messages</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">guild</span><span class="o">.</span><span class="n">me</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">PermissionOverwrite</span><span class="p">(</span><span class="n">view_channel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">send_messages</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">staff_role</span><span class="p">:</span>
+        <span class="n">overwrites</span><span class="p">[</span><span class="n">staff_role</span><span class="p">]</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">PermissionOverwrite</span><span class="p">(</span><span class="n">view_channel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">send_messages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">channel</span> <span class="o">=</span> <span class="k">await</span> <span class="n">guild</span><span class="o">.</span><span class="n">create_text_channel</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;ticket-</span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">overwrites</span><span class="o">=</span><span class="n">overwrites</span><span class="p">,</span>
+        <span class="n">topic</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2"> ticket for </span><span class="si">{</span><span class="n">author</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">embed</span> <span class="o">=</span> <span class="n">branded_embed</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2"> ticket&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Hey </span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">, a staff member will be with you soon.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot;Use the button below when you&#39;re done.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">author</span><span class="o">.</span><span class="n">mention</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="n">embed</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="n">CloseTicket</span><span class="p">())</span>
+    <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Your ticket is ready: </span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The key idea is <strong>permission overwrites</strong> — a per-channel list of who can see it. We hide
+it from <code>@everyone</code>, then add the author and the Staff role back in. Notice the Close
+button gets attached with <code>view=CloseTicket()</code>.</p>
+<hr />
+<h2>Step 4 — The dropdown</h2>
+<p>Now the menu people pick from. First, list your categories near the top of the file (under
+<code>STAFF_ROLE_NAME</code>):</p>
+<div class="codehilite"><pre><span></span><code><span class="n">CATEGORIES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;General Support&quot;</span><span class="p">,</span> <span class="s2">&quot;Questions, feedback, or anything else&quot;</span><span class="p">,</span> <span class="s2">&quot;💬&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Payment / Refund&quot;</span><span class="p">,</span> <span class="s2">&quot;Billing and refund help&quot;</span><span class="p">,</span> <span class="s2">&quot;💳&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Partnership&quot;</span><span class="p">,</span> <span class="s2">&quot;Partnership and event requests&quot;</span><span class="p">,</span> <span class="s2">&quot;🤝&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+</code></pre></div>
+
+<p>Then add the dropdown class (put it above the <code>Tickets</code> class):</p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TicketDropdown</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">Select</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">discord</span><span class="o">.</span><span class="n">SelectOption</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span> <span class="n">emoji</span><span class="o">=</span><span class="n">emoji</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">emoji</span> <span class="ow">in</span> <span class="n">CATEGORIES</span>
+        <span class="p">]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">placeholder</span><span class="o">=</span><span class="s2">&quot;Select what you need help with…&quot;</span><span class="p">,</span>
+                         <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span> <span class="n">custom_id</span><span class="o">=</span><span class="s2">&quot;ticket:open&quot;</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">create_ticket</span><span class="p">(</span><span class="n">interaction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TicketPanel</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_item</span><span class="p">(</span><span class="n">TicketDropdown</span><span class="p">())</span>
+</code></pre></div>
+
+<ul>
+<li>A <code>Select</code> is a dropdown. Each <code>SelectOption</code> is a row in it.</li>
+<li><code>callback</code> runs when someone picks an option. <code>self.values[0]</code> is what they chose, and we
+  hand it straight to <code>create_ticket</code>.</li>
+<li><code>TicketPanel</code> is the View that holds the dropdown.</li>
+</ul>
+<p>Want to change the options later? Just edit the <code>CATEGORIES</code> list — that's the whole point
+of keeping it up top.</p>
+<hr />
+<h2>Step 5 — The /ticketpanel command</h2>
+<p>Add this command <strong>inside</strong> the <code>Tickets</code> class so staff can post the panel:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Post the ticket panel here (staff only).&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">manage_guild</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ticketpanel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
+        <span class="n">embeds</span> <span class="o">=</span> <span class="n">panel</span><span class="p">(</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;🎫 | Support&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Need a hand? Pick an option from the dropdown below to open a &quot;</span>
+                        <span class="s2">&quot;private ticket.&quot;</span><span class="p">,</span>
+            <span class="n">banner</span><span class="o">=</span><span class="n">BANNERS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;assistance&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">embeds</span><span class="o">=</span><span class="n">embeds</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="n">TicketPanel</span><span class="p">())</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="s2">&quot;Panel posted!&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Add an <code>"assistance"</code> key to your <code>BANNERS</code> dict back in <code>config.py</code> (set it to a banner
+image link, or <code>None</code> for now):</p>
+<div class="codehilite"><pre><span></span><code><span class="n">BANNERS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;welcome&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;assistance&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+</code></pre></div>
+
+<p><strong>▶ Run it.</strong> Use <code>/ticketpanel</code>, then pick an option in the dropdown. A private
+<code>ticket-…</code> channel appears with a welcome embed and a Close button. Click <strong>Close</strong> — the
+channel deletes. It works!</p>
+<hr />
+<h2>Step 6 — Make the buttons survive a restart</h2>
+<p>There's one catch: right now, if you restart the bot, the old panel's dropdown and close
+buttons stop responding. Fix it by re-registering the Views on startup. Add this method
+inside the <code>Tickets</code> class:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">cog_load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bot</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">TicketPanel</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bot</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">CloseTicket</span><span class="p">())</span>
+</code></pre></div>
+
+<p>Because we gave every button and dropdown a <code>custom_id</code>, Discord can reconnect them to the
+code after a restart. <strong>▶ Restart the bot and click an old panel</strong> — it works now.</p>
+<hr />
+<h2>Step 7 — Save a transcript on close</h2>
+<p>Deleting a ticket loses the conversation. Let's save it first. Replace your <code>close</code> method
+in <code>CloseTicket</code> with this fuller version:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="nd">@discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Close&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">discord</span><span class="o">.</span><span class="n">ButtonStyle</span><span class="o">.</span><span class="n">red</span><span class="p">,</span>
+                       <span class="n">emoji</span><span class="o">=</span><span class="s2">&quot;🔒&quot;</span><span class="p">,</span> <span class="n">custom_id</span><span class="o">=</span><span class="s2">&quot;ticket:close&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">,</span> <span class="n">button</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">Button</span><span class="p">):</span>
+        <span class="n">channel</span> <span class="o">=</span> <span class="n">interaction</span><span class="o">.</span><span class="n">channel</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="s2">&quot;Saving transcript and closing…&quot;</span><span class="p">)</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">channel</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">oldest_first</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">stamp</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">created_at</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">stamp</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">author</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;(no messages)&quot;</span>
+
+        <span class="n">log_channel</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">interaction</span><span class="o">.</span><span class="n">guild</span><span class="o">.</span><span class="n">text_channels</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ticket-logs&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log_channel</span><span class="p">:</span>
+            <span class="n">file</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">transcript</span><span class="o">.</span><span class="n">encode</span><span class="p">()),</span> <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.txt&quot;</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">log_channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transcript for `</span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">`&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">)</span>
+
+        <span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</code></pre></div>
+
+<ul>
+<li><code>channel.history(...)</code> walks through every message in the ticket.</li>
+<li>We build one big text string, wrap it in a file, and drop it in <code>#ticket-logs</code> before
+  deleting the channel.</li>
+</ul>
+<p><strong>▶ Final test:</strong> open a ticket, chat a little, hit Close. The channel disappears and a
+<code>.txt</code> transcript shows up in <code>#ticket-logs</code>.</p>
+<hr />
+<h2>You built a ticket system! 🎉</h2>
+<p>Dropdown menu, private channels, permissions, persistent buttons, and transcripts — that's
+a feature plenty of paid bots charge for. Compare your <code>cogs/tickets.py</code> against the one in
+the <code>bot/</code> folder if anything misbehaves. Last stop: keeping your bot online 24/7.</p>
+</section>
+<style>
+.ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}
+.ddc *{box-sizing:border-box;}
+@media (prefers-color-scheme:dark){.ddc{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#1e9bff;--accent-weak:rgba(30,155,255,.13);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}}
+
+.ddc h1{font-size:1.95rem;line-height:1.2;margin:.1em 0 .15em;letter-spacing:-.01em;color:var(--strong);font-weight:800;}
+.ddc h2{font-size:1.35rem;margin:1.9em 0 .5em;padding-top:1em;border-top:1px solid var(--border);color:var(--strong);font-weight:700;}
+.ddc h3{font-size:1.1rem;margin:1.5em 0 .35em;color:var(--strong);font-weight:700;}
+.ddc p,.ddc li{font-size:1.005rem;}
+.ddc a{color:var(--accent);font-weight:600;text-decoration:none;}
+.ddc a:hover{text-decoration:underline;}
+.ddc strong{color:var(--strong);font-weight:700;}
+.ddc hr{border:0;height:1px;background:var(--border);margin:2.1em 0;}
+.ddc ul,.ddc ol{padding-left:1.3em;}.ddc li{margin:.3em 0;}
+.ddc :not(pre)>code{background:var(--code-inline);color:var(--code-inline-fg);padding:.12em .4em;border-radius:4px;font-size:.9em;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;}
+.ddc table{border-collapse:collapse;width:100%;margin:1.1em 0;font-size:.93rem;display:block;overflow-x:auto;}
+.ddc th,.ddc td{border:1px solid var(--border);padding:.55em .75em;text-align:left;}
+.ddc th{background:var(--panel);color:var(--strong);font-weight:700;}
+.ddc blockquote{margin:1.25em 0;padding:.8em 1em;border-left:3px solid var(--accent);background:var(--accent-weak);border-radius:0 4px 4px 0;}
+.ddc blockquote.warn{border-left-color:var(--warn);background:var(--warn-weak);}
+.ddc blockquote.good{border-left-color:var(--good);background:var(--good-weak);}
+.ddc blockquote p{margin:.3em 0;}
+.ddc .codehilite{position:relative;background:var(--code-bg);border:1px solid var(--code-border);border-radius:6px;margin:1.1em 0;}
+.ddc .codehilite pre{margin:0;padding:14px 15px;overflow-x:auto;font-size:.875rem;line-height:1.55;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;}
+.ddc .copy-btn{position:absolute;top:7px;right:7px;background:rgba(255,255,255,.07);color:#cdd6e4;border:1px solid rgba(255,255,255,.14);border-radius:5px;font-size:.72rem;padding:3px 9px;cursor:pointer;font-weight:700;opacity:0;transition:opacity .12s;}
+.ddc .codehilite:hover .copy-btn,.ddc .copy-btn:focus{opacity:1;}
+.ddc .copy-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.ddc .copy-btn.done{background:var(--good);color:#fff;border-color:var(--good);opacity:1;}
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.ddc .codehilite .hll { background-color: #ffffcc }
+.ddc .codehilite { background: #282C34; color: #ABB2BF }
+.ddc .codehilite .c { color: #7F848E } /* Comment */
+.ddc .codehilite .err { color: #ABB2BF } /* Error */
+.ddc .codehilite .esc { color: #ABB2BF } /* Escape */
+.ddc .codehilite .g { color: #ABB2BF } /* Generic */
+.ddc .codehilite .k { color: #C678DD } /* Keyword */
+.ddc .codehilite .l { color: #ABB2BF } /* Literal */
+.ddc .codehilite .n { color: #E06C75 } /* Name */
+.ddc .codehilite .o { color: #56B6C2 } /* Operator */
+.ddc .codehilite .x { color: #ABB2BF } /* Other */
+.ddc .codehilite .p { color: #ABB2BF } /* Punctuation */
+.ddc .codehilite .ch { color: #7F848E } /* Comment.Hashbang */
+.ddc .codehilite .cm { color: #7F848E } /* Comment.Multiline */
+.ddc .codehilite .cp { color: #7F848E } /* Comment.Preproc */
+.ddc .codehilite .cpf { color: #7F848E } /* Comment.PreprocFile */
+.ddc .codehilite .c1 { color: #7F848E } /* Comment.Single */
+.ddc .codehilite .cs { color: #7F848E } /* Comment.Special */
+.ddc .codehilite .gd { color: #E06C75 } /* Generic.Deleted */
+.ddc .codehilite .ge { color: #ABB2BF; font-style: italic } /* Generic.Emph */
+.ddc .codehilite .ges { color: #ABB2BF } /* Generic.EmphStrong */
+.ddc .codehilite .gr { color: #E06C75 } /* Generic.Error */
+.ddc .codehilite .gh { color: #ABB2BF; font-weight: bold } /* Generic.Heading */
+.ddc .codehilite .gi { color: #98C379 } /* Generic.Inserted */
+.ddc .codehilite .go { color: #E06C75 } /* Generic.Output */
+.ddc .codehilite .gp { color: #ABB2BF } /* Generic.Prompt */
+.ddc .codehilite .gs { color: #ABB2BF; font-weight: bold } /* Generic.Strong */
+.ddc .codehilite .gu { color: #ABB2BF; font-weight: bold } /* Generic.Subheading */
+.ddc .codehilite .gt { color: #E06C75 } /* Generic.Traceback */
+.ddc .codehilite .kc { color: #E5C07B } /* Keyword.Constant */
+.ddc .codehilite .kd { color: #C678DD } /* Keyword.Declaration */
+.ddc .codehilite .kn { color: #C678DD } /* Keyword.Namespace */
+.ddc .codehilite .kp { color: #C678DD } /* Keyword.Pseudo */
+.ddc .codehilite .kr { color: #C678DD } /* Keyword.Reserved */
+.ddc .codehilite .kt { color: #E5C07B } /* Keyword.Type */
+.ddc .codehilite .ld { color: #ABB2BF } /* Literal.Date */
+.ddc .codehilite .m { color: #D19A66 } /* Literal.Number */
+.ddc .codehilite .s { color: #98C379 } /* Literal.String */
+.ddc .codehilite .na { color: #E06C75 } /* Name.Attribute */
+.ddc .codehilite .nb { color: #E5C07B } /* Name.Builtin */
+.ddc .codehilite .nc { color: #E5C07B } /* Name.Class */
+.ddc .codehilite .no { color: #E06C75 } /* Name.Constant */
+.ddc .codehilite .nd { color: #61AFEF } /* Name.Decorator */
+.ddc .codehilite .ni { color: #E06C75 } /* Name.Entity */
+.ddc .codehilite .ne { color: #E06C75 } /* Name.Exception */
+.ddc .codehilite .nf { color: #61AFEF; font-weight: bold } /* Name.Function */
+.ddc .codehilite .nl { color: #E06C75 } /* Name.Label */
+.ddc .codehilite .nn { color: #E06C75 } /* Name.Namespace */
+.ddc .codehilite .nx { color: #E06C75 } /* Name.Other */
+.ddc .codehilite .py { color: #E06C75 } /* Name.Property */
+.ddc .codehilite .nt { color: #E06C75 } /* Name.Tag */
+.ddc .codehilite .nv { color: #E06C75 } /* Name.Variable */
+.ddc .codehilite .ow { color: #56B6C2 } /* Operator.Word */
+.ddc .codehilite .pm { color: #ABB2BF } /* Punctuation.Marker */
+.ddc .codehilite .w { color: #ABB2BF } /* Text.Whitespace */
+.ddc .codehilite .mb { color: #D19A66 } /* Literal.Number.Bin */
+.ddc .codehilite .mf { color: #D19A66 } /* Literal.Number.Float */
+.ddc .codehilite .mh { color: #D19A66 } /* Literal.Number.Hex */
+.ddc .codehilite .mi { color: #D19A66 } /* Literal.Number.Integer */
+.ddc .codehilite .mo { color: #D19A66 } /* Literal.Number.Oct */
+.ddc .codehilite .sa { color: #98C379 } /* Literal.String.Affix */
+.ddc .codehilite .sb { color: #98C379 } /* Literal.String.Backtick */
+.ddc .codehilite .sc { color: #98C379 } /* Literal.String.Char */
+.ddc .codehilite .dl { color: #98C379 } /* Literal.String.Delimiter */
+.ddc .codehilite .sd { color: #98C379 } /* Literal.String.Doc */
+.ddc .codehilite .s2 { color: #98C379 } /* Literal.String.Double */
+.ddc .codehilite .se { color: #98C379 } /* Literal.String.Escape */
+.ddc .codehilite .sh { color: #98C379 } /* Literal.String.Heredoc */
+.ddc .codehilite .si { color: #98C379 } /* Literal.String.Interpol */
+.ddc .codehilite .sx { color: #98C379 } /* Literal.String.Other */
+.ddc .codehilite .sr { color: #98C379 } /* Literal.String.Regex */
+.ddc .codehilite .s1 { color: #98C379 } /* Literal.String.Single */
+.ddc .codehilite .ss { color: #98C379 } /* Literal.String.Symbol */
+.ddc .codehilite .bp { color: #E5C07B } /* Name.Builtin.Pseudo */
+.ddc .codehilite .fm { color: #56B6C2; font-weight: bold } /* Name.Function.Magic */
+.ddc .codehilite .vc { color: #E06C75 } /* Name.Variable.Class */
+.ddc .codehilite .vg { color: #E06C75 } /* Name.Variable.Global */
+.ddc .codehilite .vi { color: #E06C75 } /* Name.Variable.Instance */
+.ddc .codehilite .vm { color: #E06C75 } /* Name.Variable.Magic */
+.ddc .codehilite .il { color: #D19A66 } /* Literal.Number.Integer.Long */
+</style>
+<script>
+
+(function(){
+ function enhance(){
+  document.querySelectorAll('.ddc .codehilite:not([data-cp])').forEach(function(box){
+   box.setAttribute('data-cp','1');
+   var b=document.createElement('button');b.className='copy-btn';b.type='button';b.textContent='Copy';
+   b.addEventListener('click',function(){navigator.clipboard.writeText(box.querySelector('pre').innerText).then(function(){
+    b.textContent='Copied';b.classList.add('done');setTimeout(function(){b.textContent='Copy';b.classList.remove('done');},1300);});});
+   box.appendChild(b);});
+  document.querySelectorAll('.ddc blockquote:not([data-cl])').forEach(function(q){
+   q.setAttribute('data-cl','1');var c=q.textContent.trim().charAt(0);
+   if(c==='⚠')q.classList.add('warn');else if(c==='✅')q.classList.add('good');});
+ }
+ if(document.readyState!=='loading')enhance();else document.addEventListener('DOMContentLoaded',enhance);
+})();
+
+</script>

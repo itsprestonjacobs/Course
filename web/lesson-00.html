@@ -1,0 +1,211 @@
+<section class="ddc">
+<h1>Welcome to the Discord Bot Course</h1>
+<p>By the end of this course you'll have built a real Discord bot in Python — one that posts
+fancy embeds, runs moderation commands, and hands out support tickets with buttons. No
+prior coding experience needed. We start from "what is Python" and go all the way to a bot
+running in your own server.</p>
+<h2>What you'll build</h2>
+<p>A single bot with three big features:</p>
+<ul>
+<li><strong>Embeds</strong> — clean, colorful info messages instead of plain text.</li>
+<li><strong>Moderation</strong> — <code>/kick</code>, <code>/ban</code>, <code>/timeout</code>, <code>/purge</code>, and <code>/warn</code>, all locked behind
+  the right permissions.</li>
+<li><strong>A ticket system</strong> — a button people click to open a private support channel, and a
+  close button that saves a transcript.</li>
+</ul>
+<h2>Course map</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Lesson</th>
+<th>What you get out of it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>Setup</td>
+<td>Python + VS Code installed, project folder ready</td>
+</tr>
+<tr>
+<td>02</td>
+<td>Python crash course</td>
+<td>Just enough Python to understand the bot code</td>
+</tr>
+<tr>
+<td>03</td>
+<td>Register your bot</td>
+<td>A real bot account + token, invited to your server</td>
+</tr>
+<tr>
+<td>04</td>
+<td>Your first bot</td>
+<td>Bot online, first slash command working</td>
+</tr>
+<tr>
+<td>05</td>
+<td>Embeds</td>
+<td>Rich, branded messages</td>
+</tr>
+<tr>
+<td>06</td>
+<td>Moderation</td>
+<td>Working mod commands with permission checks</td>
+</tr>
+<tr>
+<td>07</td>
+<td>Ticket system</td>
+<td>Buttons, private channels, transcripts</td>
+</tr>
+<tr>
+<td>08</td>
+<td>Hosting &amp; next steps</td>
+<td>Keep it running 24/7 and where to go next</td>
+</tr>
+</tbody>
+</table>
+<h2>Before you start</h2>
+<ul>
+<li>A computer (Windows, Mac, or Linux — screenshots here use Windows).</li>
+<li>A Discord account.</li>
+<li>About 2–3 hours total. Each lesson is bite-sized; take breaks.</li>
+</ul>
+<h2>How to use this course</h2>
+<p>Read a lesson, type the code yourself (don't just copy — you learn by typing), and run it.
+If something breaks, check the <strong>Troubleshooting</strong> page — almost every beginner hits the
+same handful of errors, and they're all in there.</p>
+<p>Let's go. → <strong>Lesson 01: Setup</strong></p>
+</section>
+<style>
+.ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}
+.ddc *{box-sizing:border-box;}
+@media (prefers-color-scheme:dark){.ddc{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#1e9bff;--accent-weak:rgba(30,155,255,.13);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}}
+
+.ddc h1{font-size:1.95rem;line-height:1.2;margin:.1em 0 .15em;letter-spacing:-.01em;color:var(--strong);font-weight:800;}
+.ddc h2{font-size:1.35rem;margin:1.9em 0 .5em;padding-top:1em;border-top:1px solid var(--border);color:var(--strong);font-weight:700;}
+.ddc h3{font-size:1.1rem;margin:1.5em 0 .35em;color:var(--strong);font-weight:700;}
+.ddc p,.ddc li{font-size:1.005rem;}
+.ddc a{color:var(--accent);font-weight:600;text-decoration:none;}
+.ddc a:hover{text-decoration:underline;}
+.ddc strong{color:var(--strong);font-weight:700;}
+.ddc hr{border:0;height:1px;background:var(--border);margin:2.1em 0;}
+.ddc ul,.ddc ol{padding-left:1.3em;}.ddc li{margin:.3em 0;}
+.ddc :not(pre)>code{background:var(--code-inline);color:var(--code-inline-fg);padding:.12em .4em;border-radius:4px;font-size:.9em;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;}
+.ddc table{border-collapse:collapse;width:100%;margin:1.1em 0;font-size:.93rem;display:block;overflow-x:auto;}
+.ddc th,.ddc td{border:1px solid var(--border);padding:.55em .75em;text-align:left;}
+.ddc th{background:var(--panel);color:var(--strong);font-weight:700;}
+.ddc blockquote{margin:1.25em 0;padding:.8em 1em;border-left:3px solid var(--accent);background:var(--accent-weak);border-radius:0 4px 4px 0;}
+.ddc blockquote.warn{border-left-color:var(--warn);background:var(--warn-weak);}
+.ddc blockquote.good{border-left-color:var(--good);background:var(--good-weak);}
+.ddc blockquote p{margin:.3em 0;}
+.ddc .codehilite{position:relative;background:var(--code-bg);border:1px solid var(--code-border);border-radius:6px;margin:1.1em 0;}
+.ddc .codehilite pre{margin:0;padding:14px 15px;overflow-x:auto;font-size:.875rem;line-height:1.55;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;}
+.ddc .copy-btn{position:absolute;top:7px;right:7px;background:rgba(255,255,255,.07);color:#cdd6e4;border:1px solid rgba(255,255,255,.14);border-radius:5px;font-size:.72rem;padding:3px 9px;cursor:pointer;font-weight:700;opacity:0;transition:opacity .12s;}
+.ddc .codehilite:hover .copy-btn,.ddc .copy-btn:focus{opacity:1;}
+.ddc .copy-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.ddc .copy-btn.done{background:var(--good);color:#fff;border-color:var(--good);opacity:1;}
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.ddc .codehilite .hll { background-color: #ffffcc }
+.ddc .codehilite { background: #282C34; color: #ABB2BF }
+.ddc .codehilite .c { color: #7F848E } /* Comment */
+.ddc .codehilite .err { color: #ABB2BF } /* Error */
+.ddc .codehilite .esc { color: #ABB2BF } /* Escape */
+.ddc .codehilite .g { color: #ABB2BF } /* Generic */
+.ddc .codehilite .k { color: #C678DD } /* Keyword */
+.ddc .codehilite .l { color: #ABB2BF } /* Literal */
+.ddc .codehilite .n { color: #E06C75 } /* Name */
+.ddc .codehilite .o { color: #56B6C2 } /* Operator */
+.ddc .codehilite .x { color: #ABB2BF } /* Other */
+.ddc .codehilite .p { color: #ABB2BF } /* Punctuation */
+.ddc .codehilite .ch { color: #7F848E } /* Comment.Hashbang */
+.ddc .codehilite .cm { color: #7F848E } /* Comment.Multiline */
+.ddc .codehilite .cp { color: #7F848E } /* Comment.Preproc */
+.ddc .codehilite .cpf { color: #7F848E } /* Comment.PreprocFile */
+.ddc .codehilite .c1 { color: #7F848E } /* Comment.Single */
+.ddc .codehilite .cs { color: #7F848E } /* Comment.Special */
+.ddc .codehilite .gd { color: #E06C75 } /* Generic.Deleted */
+.ddc .codehilite .ge { color: #ABB2BF; font-style: italic } /* Generic.Emph */
+.ddc .codehilite .ges { color: #ABB2BF } /* Generic.EmphStrong */
+.ddc .codehilite .gr { color: #E06C75 } /* Generic.Error */
+.ddc .codehilite .gh { color: #ABB2BF; font-weight: bold } /* Generic.Heading */
+.ddc .codehilite .gi { color: #98C379 } /* Generic.Inserted */
+.ddc .codehilite .go { color: #E06C75 } /* Generic.Output */
+.ddc .codehilite .gp { color: #ABB2BF } /* Generic.Prompt */
+.ddc .codehilite .gs { color: #ABB2BF; font-weight: bold } /* Generic.Strong */
+.ddc .codehilite .gu { color: #ABB2BF; font-weight: bold } /* Generic.Subheading */
+.ddc .codehilite .gt { color: #E06C75 } /* Generic.Traceback */
+.ddc .codehilite .kc { color: #E5C07B } /* Keyword.Constant */
+.ddc .codehilite .kd { color: #C678DD } /* Keyword.Declaration */
+.ddc .codehilite .kn { color: #C678DD } /* Keyword.Namespace */
+.ddc .codehilite .kp { color: #C678DD } /* Keyword.Pseudo */
+.ddc .codehilite .kr { color: #C678DD } /* Keyword.Reserved */
+.ddc .codehilite .kt { color: #E5C07B } /* Keyword.Type */
+.ddc .codehilite .ld { color: #ABB2BF } /* Literal.Date */
+.ddc .codehilite .m { color: #D19A66 } /* Literal.Number */
+.ddc .codehilite .s { color: #98C379 } /* Literal.String */
+.ddc .codehilite .na { color: #E06C75 } /* Name.Attribute */
+.ddc .codehilite .nb { color: #E5C07B } /* Name.Builtin */
+.ddc .codehilite .nc { color: #E5C07B } /* Name.Class */
+.ddc .codehilite .no { color: #E06C75 } /* Name.Constant */
+.ddc .codehilite .nd { color: #61AFEF } /* Name.Decorator */
+.ddc .codehilite .ni { color: #E06C75 } /* Name.Entity */
+.ddc .codehilite .ne { color: #E06C75 } /* Name.Exception */
+.ddc .codehilite .nf { color: #61AFEF; font-weight: bold } /* Name.Function */
+.ddc .codehilite .nl { color: #E06C75 } /* Name.Label */
+.ddc .codehilite .nn { color: #E06C75 } /* Name.Namespace */
+.ddc .codehilite .nx { color: #E06C75 } /* Name.Other */
+.ddc .codehilite .py { color: #E06C75 } /* Name.Property */
+.ddc .codehilite .nt { color: #E06C75 } /* Name.Tag */
+.ddc .codehilite .nv { color: #E06C75 } /* Name.Variable */
+.ddc .codehilite .ow { color: #56B6C2 } /* Operator.Word */
+.ddc .codehilite .pm { color: #ABB2BF } /* Punctuation.Marker */
+.ddc .codehilite .w { color: #ABB2BF } /* Text.Whitespace */
+.ddc .codehilite .mb { color: #D19A66 } /* Literal.Number.Bin */
+.ddc .codehilite .mf { color: #D19A66 } /* Literal.Number.Float */
+.ddc .codehilite .mh { color: #D19A66 } /* Literal.Number.Hex */
+.ddc .codehilite .mi { color: #D19A66 } /* Literal.Number.Integer */
+.ddc .codehilite .mo { color: #D19A66 } /* Literal.Number.Oct */
+.ddc .codehilite .sa { color: #98C379 } /* Literal.String.Affix */
+.ddc .codehilite .sb { color: #98C379 } /* Literal.String.Backtick */
+.ddc .codehilite .sc { color: #98C379 } /* Literal.String.Char */
+.ddc .codehilite .dl { color: #98C379 } /* Literal.String.Delimiter */
+.ddc .codehilite .sd { color: #98C379 } /* Literal.String.Doc */
+.ddc .codehilite .s2 { color: #98C379 } /* Literal.String.Double */
+.ddc .codehilite .se { color: #98C379 } /* Literal.String.Escape */
+.ddc .codehilite .sh { color: #98C379 } /* Literal.String.Heredoc */
+.ddc .codehilite .si { color: #98C379 } /* Literal.String.Interpol */
+.ddc .codehilite .sx { color: #98C379 } /* Literal.String.Other */
+.ddc .codehilite .sr { color: #98C379 } /* Literal.String.Regex */
+.ddc .codehilite .s1 { color: #98C379 } /* Literal.String.Single */
+.ddc .codehilite .ss { color: #98C379 } /* Literal.String.Symbol */
+.ddc .codehilite .bp { color: #E5C07B } /* Name.Builtin.Pseudo */
+.ddc .codehilite .fm { color: #56B6C2; font-weight: bold } /* Name.Function.Magic */
+.ddc .codehilite .vc { color: #E06C75 } /* Name.Variable.Class */
+.ddc .codehilite .vg { color: #E06C75 } /* Name.Variable.Global */
+.ddc .codehilite .vi { color: #E06C75 } /* Name.Variable.Instance */
+.ddc .codehilite .vm { color: #E06C75 } /* Name.Variable.Magic */
+.ddc .codehilite .il { color: #D19A66 } /* Literal.Number.Integer.Long */
+</style>
+<script>
+
+(function(){
+ function enhance(){
+  document.querySelectorAll('.ddc .codehilite:not([data-cp])').forEach(function(box){
+   box.setAttribute('data-cp','1');
+   var b=document.createElement('button');b.className='copy-btn';b.type='button';b.textContent='Copy';
+   b.addEventListener('click',function(){navigator.clipboard.writeText(box.querySelector('pre').innerText).then(function(){
+    b.textContent='Copied';b.classList.add('done');setTimeout(function(){b.textContent='Copy';b.classList.remove('done');},1300);});});
+   box.appendChild(b);});
+  document.querySelectorAll('.ddc blockquote:not([data-cl])').forEach(function(q){
+   q.setAttribute('data-cl','1');var c=q.textContent.trim().charAt(0);
+   if(c==='⚠')q.classList.add('warn');else if(c==='✅')q.classList.add('good');});
+ }
+ if(document.readyState!=='loading')enhance();else document.addEventListener('DOMContentLoaded',enhance);
+})();
+
+</script>

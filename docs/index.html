@@ -1,0 +1,1265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Derpy's Designs — Discord Bot Course</title>
+<meta name="description" content="Build a Python Discord bot from scratch — embeds, moderation, and a ticket system.">
+
+<style>
+:root{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;}
+@media (prefers-color-scheme:dark){:root{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#1e9bff;--accent-weak:rgba(30,155,255,.13);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}}
+:root[data-theme="dark"]{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#1e9bff;--accent-weak:rgba(30,155,255,.13);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}
+:root[data-theme="light"]{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;}
+*{box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.65;}
+a{color:var(--accent);}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;height:56px;padding:0 18px;background:var(--sidebar);border-bottom:1px solid var(--border);}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;}
+.logo{width:32px;height:32px;border-radius:7px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:900;font-size:1.05rem;}
+.brand small{display:block;font-weight:600;font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);margin-top:1px;}
+.spacer{flex:1;}
+.theme-btn{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:7px;height:36px;width:36px;font-size:1rem;cursor:pointer;display:grid;place-items:center;}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent);}
+.wrap{display:grid;grid-template-columns:256px minmax(0,1fr);max-width:1160px;margin:0 auto;}
+.sidebar{position:sticky;top:56px;align-self:start;height:calc(100vh - 56px);overflow-y:auto;padding:18px 12px;background:var(--sidebar);border-right:1px solid var(--border);}
+.side-label{font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:700;padding:0 10px 8px;}
+.nav-link{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;text-decoration:none;color:var(--text);font-size:.92rem;font-weight:600;margin-bottom:1px;}
+.nav-link:hover{background:var(--accent-weak);}
+.nav-link.active{background:var(--accent);color:#fff;}
+.nav-num{flex:none;width:25px;height:25px;border-radius:5px;display:grid;place-items:center;font-size:.76rem;font-weight:800;background:var(--accent-weak);color:var(--accent);font-variant-numeric:tabular-nums;}
+.nav-link.active .nav-num{background:rgba(255,255,255,.22);color:#fff;}
+.nav-title{flex:1;}
+.nav-check{opacity:0;color:var(--good);font-weight:900;font-size:.82rem;}
+.nav-link.done .nav-check{opacity:1;}.nav-link.active .nav-check{color:#fff;opacity:.85;}
+.progress{margin:16px 10px 4px;}
+.progress-bar{height:5px;border-radius:99px;background:var(--border);overflow:hidden;}
+.progress-fill{height:100%;width:0;background:var(--accent);transition:width .25s;}
+.progress-txt{font-size:.71rem;color:var(--dim);margin-top:6px;}
+.content{padding:32px 44px 84px;min-width:0;}
+.lesson{display:none;}.lesson.active{display:block;}
+.ddc{max-width:720px;}
+.pn-row{display:flex;justify-content:space-between;gap:14px;margin-top:3em;padding-top:1.4em;border-top:1px solid var(--border);}
+.pn{display:flex;flex-direction:column;gap:2px;text-decoration:none;padding:11px 15px;border:1px solid var(--border);border-radius:7px;min-width:145px;background:var(--card);}
+.pn:hover{border-color:var(--accent);}
+.pn.next{text-align:right;margin-left:auto;}
+.pn span{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;font-weight:700;}
+.pn b{color:var(--strong);font-size:.95rem;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+.ddc h1{font-size:1.95rem;line-height:1.2;margin:.1em 0 .15em;letter-spacing:-.01em;color:var(--strong);font-weight:800;}
+.ddc h2{font-size:1.35rem;margin:1.9em 0 .5em;padding-top:1em;border-top:1px solid var(--border);color:var(--strong);font-weight:700;}
+.ddc h3{font-size:1.1rem;margin:1.5em 0 .35em;color:var(--strong);font-weight:700;}
+.ddc p,.ddc li{font-size:1.005rem;}
+.ddc a{color:var(--accent);font-weight:600;text-decoration:none;}
+.ddc a:hover{text-decoration:underline;}
+.ddc strong{color:var(--strong);font-weight:700;}
+.ddc hr{border:0;height:1px;background:var(--border);margin:2.1em 0;}
+.ddc ul,.ddc ol{padding-left:1.3em;}.ddc li{margin:.3em 0;}
+.ddc :not(pre)>code{background:var(--code-inline);color:var(--code-inline-fg);padding:.12em .4em;border-radius:4px;font-size:.9em;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;}
+.ddc table{border-collapse:collapse;width:100%;margin:1.1em 0;font-size:.93rem;display:block;overflow-x:auto;}
+.ddc th,.ddc td{border:1px solid var(--border);padding:.55em .75em;text-align:left;}
+.ddc th{background:var(--panel);color:var(--strong);font-weight:700;}
+.ddc blockquote{margin:1.25em 0;padding:.8em 1em;border-left:3px solid var(--accent);background:var(--accent-weak);border-radius:0 4px 4px 0;}
+.ddc blockquote.warn{border-left-color:var(--warn);background:var(--warn-weak);}
+.ddc blockquote.good{border-left-color:var(--good);background:var(--good-weak);}
+.ddc blockquote p{margin:.3em 0;}
+.ddc .codehilite{position:relative;background:var(--code-bg);border:1px solid var(--code-border);border-radius:6px;margin:1.1em 0;}
+.ddc .codehilite pre{margin:0;padding:14px 15px;overflow-x:auto;font-size:.875rem;line-height:1.55;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;}
+.ddc .copy-btn{position:absolute;top:7px;right:7px;background:rgba(255,255,255,.07);color:#cdd6e4;border:1px solid rgba(255,255,255,.14);border-radius:5px;font-size:.72rem;padding:3px 9px;cursor:pointer;font-weight:700;opacity:0;transition:opacity .12s;}
+.ddc .codehilite:hover .copy-btn,.ddc .copy-btn:focus{opacity:1;}
+.ddc .copy-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.ddc .copy-btn.done{background:var(--good);color:#fff;border-color:var(--good);opacity:1;}
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.ddc .codehilite .hll { background-color: #ffffcc }
+.ddc .codehilite { background: #282C34; color: #ABB2BF }
+.ddc .codehilite .c { color: #7F848E } /* Comment */
+.ddc .codehilite .err { color: #ABB2BF } /* Error */
+.ddc .codehilite .esc { color: #ABB2BF } /* Escape */
+.ddc .codehilite .g { color: #ABB2BF } /* Generic */
+.ddc .codehilite .k { color: #C678DD } /* Keyword */
+.ddc .codehilite .l { color: #ABB2BF } /* Literal */
+.ddc .codehilite .n { color: #E06C75 } /* Name */
+.ddc .codehilite .o { color: #56B6C2 } /* Operator */
+.ddc .codehilite .x { color: #ABB2BF } /* Other */
+.ddc .codehilite .p { color: #ABB2BF } /* Punctuation */
+.ddc .codehilite .ch { color: #7F848E } /* Comment.Hashbang */
+.ddc .codehilite .cm { color: #7F848E } /* Comment.Multiline */
+.ddc .codehilite .cp { color: #7F848E } /* Comment.Preproc */
+.ddc .codehilite .cpf { color: #7F848E } /* Comment.PreprocFile */
+.ddc .codehilite .c1 { color: #7F848E } /* Comment.Single */
+.ddc .codehilite .cs { color: #7F848E } /* Comment.Special */
+.ddc .codehilite .gd { color: #E06C75 } /* Generic.Deleted */
+.ddc .codehilite .ge { color: #ABB2BF; font-style: italic } /* Generic.Emph */
+.ddc .codehilite .ges { color: #ABB2BF } /* Generic.EmphStrong */
+.ddc .codehilite .gr { color: #E06C75 } /* Generic.Error */
+.ddc .codehilite .gh { color: #ABB2BF; font-weight: bold } /* Generic.Heading */
+.ddc .codehilite .gi { color: #98C379 } /* Generic.Inserted */
+.ddc .codehilite .go { color: #E06C75 } /* Generic.Output */
+.ddc .codehilite .gp { color: #ABB2BF } /* Generic.Prompt */
+.ddc .codehilite .gs { color: #ABB2BF; font-weight: bold } /* Generic.Strong */
+.ddc .codehilite .gu { color: #ABB2BF; font-weight: bold } /* Generic.Subheading */
+.ddc .codehilite .gt { color: #E06C75 } /* Generic.Traceback */
+.ddc .codehilite .kc { color: #E5C07B } /* Keyword.Constant */
+.ddc .codehilite .kd { color: #C678DD } /* Keyword.Declaration */
+.ddc .codehilite .kn { color: #C678DD } /* Keyword.Namespace */
+.ddc .codehilite .kp { color: #C678DD } /* Keyword.Pseudo */
+.ddc .codehilite .kr { color: #C678DD } /* Keyword.Reserved */
+.ddc .codehilite .kt { color: #E5C07B } /* Keyword.Type */
+.ddc .codehilite .ld { color: #ABB2BF } /* Literal.Date */
+.ddc .codehilite .m { color: #D19A66 } /* Literal.Number */
+.ddc .codehilite .s { color: #98C379 } /* Literal.String */
+.ddc .codehilite .na { color: #E06C75 } /* Name.Attribute */
+.ddc .codehilite .nb { color: #E5C07B } /* Name.Builtin */
+.ddc .codehilite .nc { color: #E5C07B } /* Name.Class */
+.ddc .codehilite .no { color: #E06C75 } /* Name.Constant */
+.ddc .codehilite .nd { color: #61AFEF } /* Name.Decorator */
+.ddc .codehilite .ni { color: #E06C75 } /* Name.Entity */
+.ddc .codehilite .ne { color: #E06C75 } /* Name.Exception */
+.ddc .codehilite .nf { color: #61AFEF; font-weight: bold } /* Name.Function */
+.ddc .codehilite .nl { color: #E06C75 } /* Name.Label */
+.ddc .codehilite .nn { color: #E06C75 } /* Name.Namespace */
+.ddc .codehilite .nx { color: #E06C75 } /* Name.Other */
+.ddc .codehilite .py { color: #E06C75 } /* Name.Property */
+.ddc .codehilite .nt { color: #E06C75 } /* Name.Tag */
+.ddc .codehilite .nv { color: #E06C75 } /* Name.Variable */
+.ddc .codehilite .ow { color: #56B6C2 } /* Operator.Word */
+.ddc .codehilite .pm { color: #ABB2BF } /* Punctuation.Marker */
+.ddc .codehilite .w { color: #ABB2BF } /* Text.Whitespace */
+.ddc .codehilite .mb { color: #D19A66 } /* Literal.Number.Bin */
+.ddc .codehilite .mf { color: #D19A66 } /* Literal.Number.Float */
+.ddc .codehilite .mh { color: #D19A66 } /* Literal.Number.Hex */
+.ddc .codehilite .mi { color: #D19A66 } /* Literal.Number.Integer */
+.ddc .codehilite .mo { color: #D19A66 } /* Literal.Number.Oct */
+.ddc .codehilite .sa { color: #98C379 } /* Literal.String.Affix */
+.ddc .codehilite .sb { color: #98C379 } /* Literal.String.Backtick */
+.ddc .codehilite .sc { color: #98C379 } /* Literal.String.Char */
+.ddc .codehilite .dl { color: #98C379 } /* Literal.String.Delimiter */
+.ddc .codehilite .sd { color: #98C379 } /* Literal.String.Doc */
+.ddc .codehilite .s2 { color: #98C379 } /* Literal.String.Double */
+.ddc .codehilite .se { color: #98C379 } /* Literal.String.Escape */
+.ddc .codehilite .sh { color: #98C379 } /* Literal.String.Heredoc */
+.ddc .codehilite .si { color: #98C379 } /* Literal.String.Interpol */
+.ddc .codehilite .sx { color: #98C379 } /* Literal.String.Other */
+.ddc .codehilite .sr { color: #98C379 } /* Literal.String.Regex */
+.ddc .codehilite .s1 { color: #98C379 } /* Literal.String.Single */
+.ddc .codehilite .ss { color: #98C379 } /* Literal.String.Symbol */
+.ddc .codehilite .bp { color: #E5C07B } /* Name.Builtin.Pseudo */
+.ddc .codehilite .fm { color: #56B6C2; font-weight: bold } /* Name.Function.Magic */
+.ddc .codehilite .vc { color: #E06C75 } /* Name.Variable.Class */
+.ddc .codehilite .vg { color: #E06C75 } /* Name.Variable.Global */
+.ddc .codehilite .vi { color: #E06C75 } /* Name.Variable.Instance */
+.ddc .codehilite .vm { color: #E06C75 } /* Name.Variable.Magic */
+.ddc .codehilite .il { color: #D19A66 } /* Literal.Number.Integer.Long */
+@media(max-width:900px){.wrap{grid-template-columns:1fr;}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border);display:flex;gap:6px;overflow-x:auto;padding:10px;}.side-label,.progress{display:none;}.nav-link{flex:none;margin:0;white-space:nowrap;}.nav-title{display:none;}.nav-num{width:auto;padding:0 8px;height:27px;}.content{padding:22px 16px 64px;}.ddc h1{font-size:1.6rem;}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+</style>
+
+</head>
+<body>
+<header class="topbar"><div class="brand"><div class="logo">D</div><div>Derpy's Designs<small>Discord Bot Course</small></div></div><div class="spacer"></div><button class="theme-btn" type="button" aria-label="Toggle light or dark theme">&#9790;</button></header><div class="wrap"><aside class="sidebar"><div class="side-label">Lessons</div><a class="nav-link" href="#l0" data-target="l0"><span class="nav-num">00</span><span class="nav-title">Welcome</span><span class="nav-check">✓</span></a>
+<a class="nav-link" href="#l1" data-target="l1"><span class="nav-num">01</span><span class="nav-title">Setup</span><span class="nav-check">✓</span></a>
+<a class="nav-link" href="#l2" data-target="l2"><span class="nav-num">02</span><span class="nav-title">Python Basics</span><span class="nav-check">✓</span></a>
+<a class="nav-link" href="#l3" data-target="l3"><span class="nav-num">03</span><span class="nav-title">Register Your Bot</span><span class="nav-check">✓</span></a>
+<a class="nav-link" href="#l4" data-target="l4"><span class="nav-num">04</span><span class="nav-title">Your First Bot</span><span class="nav-check">✓</span></a>
+<a class="nav-link" href="#l5" data-target="l5"><span class="nav-num">05</span><span class="nav-title">Embeds</span><span class="nav-check">✓</span></a>
+<a class="nav-link" href="#l6" data-target="l6"><span class="nav-num">06</span><span class="nav-title">Moderation</span><span class="nav-check">✓</span></a>
+<a class="nav-link" href="#l7" data-target="l7"><span class="nav-num">07</span><span class="nav-title">Ticket System</span><span class="nav-check">✓</span></a>
+<a class="nav-link" href="#l8" data-target="l8"><span class="nav-num">08</span><span class="nav-title">Hosting & Next</span><span class="nav-check">✓</span></a>
+<a class="nav-link" href="#tb" data-target="tb"><span class="nav-num">*</span><span class="nav-title">Troubleshooting</span><span class="nav-check">✓</span></a><div class="progress"><div class="progress-bar"><div class="progress-fill"></div></div><div class="progress-txt"></div></div></aside><main class="content"><article class="ddc lesson" id="l0" data-idx="0">
+<h1>Welcome to the Discord Bot Course</h1>
+<p>By the end of this course you'll have built a real Discord bot in Python — one that posts
+fancy embeds, runs moderation commands, and hands out support tickets with buttons. No
+prior coding experience needed. We start from "what is Python" and go all the way to a bot
+running in your own server.</p>
+<h2>What you'll build</h2>
+<p>A single bot with three big features:</p>
+<ul>
+<li><strong>Embeds</strong> — clean, colorful info messages instead of plain text.</li>
+<li><strong>Moderation</strong> — <code>/kick</code>, <code>/ban</code>, <code>/timeout</code>, <code>/purge</code>, and <code>/warn</code>, all locked behind
+  the right permissions.</li>
+<li><strong>A ticket system</strong> — a button people click to open a private support channel, and a
+  close button that saves a transcript.</li>
+</ul>
+<h2>Course map</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Lesson</th>
+<th>What you get out of it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>Setup</td>
+<td>Python + VS Code installed, project folder ready</td>
+</tr>
+<tr>
+<td>02</td>
+<td>Python crash course</td>
+<td>Just enough Python to understand the bot code</td>
+</tr>
+<tr>
+<td>03</td>
+<td>Register your bot</td>
+<td>A real bot account + token, invited to your server</td>
+</tr>
+<tr>
+<td>04</td>
+<td>Your first bot</td>
+<td>Bot online, first slash command working</td>
+</tr>
+<tr>
+<td>05</td>
+<td>Embeds</td>
+<td>Rich, branded messages</td>
+</tr>
+<tr>
+<td>06</td>
+<td>Moderation</td>
+<td>Working mod commands with permission checks</td>
+</tr>
+<tr>
+<td>07</td>
+<td>Ticket system</td>
+<td>Buttons, private channels, transcripts</td>
+</tr>
+<tr>
+<td>08</td>
+<td>Hosting &amp; next steps</td>
+<td>Keep it running 24/7 and where to go next</td>
+</tr>
+</tbody>
+</table>
+<h2>Before you start</h2>
+<ul>
+<li>A computer (Windows, Mac, or Linux — screenshots here use Windows).</li>
+<li>A Discord account.</li>
+<li>About 2–3 hours total. Each lesson is bite-sized; take breaks.</li>
+</ul>
+<h2>How to use this course</h2>
+<p>Read a lesson, type the code yourself (don't just copy — you learn by typing), and run it.
+If something breaks, check the <strong>Troubleshooting</strong> page — almost every beginner hits the
+same handful of errors, and they're all in there.</p>
+<p>Let's go. → <strong>Lesson 01: Setup</strong></p>
+<nav class="pn-row"><span></span><a class="pn next" href="#l1"><span>Next</span><b>Setup</b></a></nav>
+</article>
+<article class="ddc lesson" id="l1" data-idx="1">
+<h1>Lesson 01 — Setup</h1>
+<p>Before we write any bot code we need two free tools: <strong>Python</strong> (the language) and <strong>VS
+Code</strong> (where we write and run the code). This lesson gets both installed and your project
+folder ready.</p>
+<h2>Step 1 — Install Python</h2>
+<ol>
+<li>Go to <strong>python.org/downloads</strong> and click the big yellow <strong>Download Python</strong> button.</li>
+<li>Run the installer.</li>
+<li><strong>VERY IMPORTANT:</strong> on the first screen, check the box that says
+   <strong>"Add Python to PATH"</strong> at the bottom. If you miss this, the <code>python</code> command won't
+   work later.</li>
+<li>Click <strong>Install Now</strong> and let it finish.</li>
+</ol>
+<blockquote>
+<p>✅ <strong>Check it worked.</strong> Open a terminal (on Windows press the Start key, type
+<code>powershell</code>, hit Enter) and run:
+<code>python --version</code>
+You should see something like <code>Python 3.12.4</code>. If you get an error, Python wasn't added
+to PATH — reinstall and make sure that box is checked.</p>
+</blockquote>
+<h2>Step 2 — Install VS Code</h2>
+<ol>
+<li>Go to <strong>code.visualstudio.com</strong> and download <strong>Visual Studio Code</strong>.</li>
+<li>Install it (the defaults are fine).</li>
+<li>Open VS Code, click the <strong>Extensions</strong> icon on the left (four squares), search for
+   <strong>Python</strong>, and install the one by Microsoft. This gives you nice colors and error
+   hints.</li>
+</ol>
+<h2>Step 3 — Make your project folder</h2>
+<ol>
+<li>Make a new folder somewhere easy to find, like <code>Documents\discord-bot</code>.</li>
+<li>In VS Code choose <strong>File → Open Folder</strong> and pick it.</li>
+<li>Open the built-in terminal with <strong>Terminal → New Terminal</strong>. Everything from here on
+   gets typed into this terminal.</li>
+</ol>
+<h2>Step 4 — Create a virtual environment</h2>
+<p>A "virtual environment" is a private box for this project's libraries so they don't clash
+with anything else on your computer. Run this in the VS Code terminal:</p>
+<div class="codehilite"><pre><span></span><code>python -m venv venv
+</code></pre></div>
+
+<p>Then turn it on:</p>
+<div class="codehilite"><pre><span></span><code># Windows (PowerShell)
+venv\Scripts\Activate
+
+# Mac / Linux
+source venv/bin/activate
+</code></pre></div>
+
+<p>You'll know it worked when you see <code>(venv)</code> at the start of your terminal line.</p>
+<blockquote>
+<p>⚠️ <strong>Windows blocked the script?</strong> If you see a red error about "running scripts is
+disabled", run this once, then try activating again:
+<code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code></p>
+</blockquote>
+<h2>Step 5 — Install discord.py</h2>
+<p>With <code>(venv)</code> showing, install the library that talks to Discord:</p>
+<div class="codehilite"><pre><span></span><code>pip install discord.py python-dotenv
+</code></pre></div>
+
+<p><code>discord.py</code> is the bot library. <code>python-dotenv</code> lets us keep our secret token in a file
+instead of pasting it into the code.</p>
+<blockquote>
+<p>✅ <strong>Check it worked.</strong> Run <code>pip list</code> — you should see <code>discord.py</code> in the list.</p>
+</blockquote>
+<h2>You're set up!</h2>
+<p>You now have Python, VS Code, a project folder, a virtual environment, and the library.
+Next we'll learn just enough Python to understand what we're about to write.</p>
+<nav class="pn-row"><a class="pn prev" href="#l0"><span>Previous</span><b>Welcome</b></a><a class="pn next" href="#l2"><span>Next</span><b>Python Basics</b></a></nav>
+</article>
+<article class="ddc lesson" id="l2" data-idx="2">
+<h1>Lesson 02 — Python Crash Course</h1>
+<p>You don't need to master Python to build a bot — you need maybe six ideas. This is all of
+them. Make a file called <code>practice.py</code> in your project and try each snippet by running
+<code>python practice.py</code>.</p>
+<h2>Printing and variables</h2>
+<p><code>print()</code> shows text. A <strong>variable</strong> is a labeled box that stores a value.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Derpy&quot;</span>
+<span class="n">age</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;is&quot;</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="s2">&quot;years old&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h2>f-strings (the clean way to build text)</h2>
+<p>Put an <code>f</code> before the quotes and drop variables straight into the string with <code>{ }</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Derpy&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hello </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, welcome back!&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>We use f-strings constantly in the bot for things like <code>f"ticket-{author.id}"</code>.</p>
+<h2>Functions</h2>
+<p>A <strong>function</strong> is a reusable chunk of code you give a name. You "call" it to run it.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">greet</span><span class="p">(</span><span class="n">who</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hi </span><span class="si">{</span><span class="n">who</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
+
+<span class="n">greet</span><span class="p">(</span><span class="s2">&quot;Sam&quot;</span><span class="p">)</span>
+<span class="n">greet</span><span class="p">(</span><span class="s2">&quot;Alex&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p><code>who</code> is an <strong>argument</strong> — a value you hand the function to work with.</p>
+<h2>Imports</h2>
+<p>Most code you use is written by other people. <code>import</code> pulls it in:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
+</code></pre></div>
+
+<p>Now you can use everything the <code>discord</code> library offers.</p>
+<h2>if / else — making decisions</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">members</span> <span class="o">=</span> <span class="mi">120</span>
+<span class="k">if</span> <span class="n">members</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Big server!&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cozy server.&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The bot uses this everywhere, e.g. "if this person already has a ticket, don't make a new
+one."</p>
+<h2>async and await — the one new idea</h2>
+<p>This is the only unusual part, so read slowly. A Discord bot is constantly waiting on the
+internet: waiting for a message, waiting for Discord to create a channel, waiting for a
+reply. If the bot froze every time it waited, it could only do one thing at a time.</p>
+<p><strong><code>async</code></strong> marks a function that's allowed to pause and let other work happen while it
+waits. <strong><code>await</code></strong> is where it pauses until an answer comes back.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open_ticket</span><span class="p">():</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="k">await</span> <span class="n">guild</span><span class="o">.</span><span class="n">create_text_channel</span><span class="p">(</span><span class="s2">&quot;ticket-1&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;Ticket opened!&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>You don't need to fully understand <em>how</em> it works. Just remember the rule:</p>
+<blockquote>
+<p>Bot actions that talk to Discord almost always need <code>await</code> in front of them, and they
+must live inside a function defined with <code>async def</code>.</p>
+</blockquote>
+<p>If you forget an <code>await</code>, the code won't crash loudly — it just won't do the thing. So
+when a command "does nothing," a missing <code>await</code> is the first thing to check.</p>
+<h2>That's genuinely enough</h2>
+<p>Variables, f-strings, functions, imports, if/else, and async/await. With those six ideas
+the bot code will read like plain instructions. On to the fun part — making the bot exist.</p>
+<nav class="pn-row"><a class="pn prev" href="#l1"><span>Previous</span><b>Setup</b></a><a class="pn next" href="#l3"><span>Next</span><b>Register Your Bot</b></a></nav>
+</article>
+<article class="ddc lesson" id="l3" data-idx="3">
+<h1>Lesson 03 — Register Your Bot</h1>
+<p>Right now your bot doesn't exist to Discord. In this lesson we create its account, get its
+secret <strong>token</strong> (like a password), and invite it into a server. No code yet — this all
+happens on Discord's website.</p>
+<h2>Step 1 — Make a test server</h2>
+<p>If you don't already have a server to mess around in, make one. In Discord click the <strong>+</strong>
+on the left → <strong>Create My Own</strong> → give it any name. You're the owner, so you can't break
+anything important.</p>
+<h2>Step 2 — Create an application</h2>
+<ol>
+<li>Go to <strong>discord.com/developers/applications</strong> and log in.</li>
+<li>Click <strong>New Application</strong> (top right), name it (e.g. "Derpy Bot"), agree, and <strong>Create</strong>.</li>
+<li>This "application" is the container for your bot.</li>
+</ol>
+<h2>Step 3 — Turn it into a bot and get the token</h2>
+<ol>
+<li>In the left menu click <strong>Bot</strong>.</li>
+<li>Under <strong>Token</strong>, click <strong>Reset Token</strong> → <strong>Yes, do it</strong> → <strong>Copy</strong>.</li>
+<li>Paste it somewhere safe for a minute. We'll put it in a file next lesson.</li>
+</ol>
+<blockquote>
+<p>🔒 <strong>Treat the token like a password.</strong> Anyone who has it can control your bot. Never
+post it in Discord, never put it on GitHub. If it ever leaks, come back here and click
+<strong>Reset Token</strong> — the old one instantly stops working.</p>
+</blockquote>
+<h2>Step 4 — Turn on the intents</h2>
+<p>Scroll down on the same <strong>Bot</strong> page to <strong>Privileged Gateway Intents</strong> and switch ON:</p>
+<ul>
+<li><strong>Server Members Intent</strong></li>
+<li><strong>Message Content Intent</strong></li>
+<li><strong>Presence Intent</strong> (optional, but turn it on so nothing surprises you later)</li>
+</ul>
+<p><strong>Intents</strong> are permissions for what kinds of events your bot is allowed to receive.
+Our moderation and ticket features need to know about members, so these must be on. Click
+<strong>Save Changes</strong>.</p>
+<h2>Step 5 — Build the invite link</h2>
+<ol>
+<li>In the left menu open <strong>OAuth2 → URL Generator</strong>.</li>
+<li>Under <strong>Scopes</strong>, check <strong><code>bot</code></strong> and <strong><code>applications.commands</code></strong>
+   (that second one is what makes slash commands work).</li>
+<li>A <strong>Bot Permissions</strong> box appears below. Check these:
+   - Manage Channels
+   - Kick Members
+   - Ban Members
+   - Moderate Members
+   - Manage Messages
+   - Send Messages
+   - Read Message History
+   - Embed Links</li>
+<li>Copy the <strong>generated URL</strong> at the very bottom.</li>
+</ol>
+<h2>Step 6 — Invite the bot</h2>
+<p>Paste that URL into your browser, pick your test server, click <strong>Authorize</strong>, solve the
+captcha. Your bot now shows up in the member list — offline for now, because we haven't
+written the code that logs it in. That's next.</p>
+<blockquote>
+<p>💡 <strong>Role order matters.</strong> In <strong>Server Settings → Roles</strong>, drag your bot's role near the
+top. A bot can only kick/ban/timeout members whose highest role is <strong>below</strong> its own.</p>
+</blockquote>
+<nav class="pn-row"><a class="pn prev" href="#l2"><span>Previous</span><b>Python Basics</b></a><a class="pn next" href="#l4"><span>Next</span><b>Your First Bot</b></a></nav>
+</article>
+<article class="ddc lesson" id="l4" data-idx="4">
+<h1>Lesson 04 — Your First Bot</h1>
+<p>Time to bring the bot online. We'll write the smallest possible bot, get it logged in, and
+add one slash command so you can see the whole loop work.</p>
+<h2>Step 1 — Keep the token out of your code</h2>
+<p>Never paste your token directly in a <code>.py</code> file. Instead, make a file named exactly <code>.env</code>
+in your project folder and put this inside (paste your real token):</p>
+<div class="codehilite"><pre><span></span><code>DISCORD_TOKEN=your-token-goes-here
+GUILD_ID=
+</code></pre></div>
+
+<p><code>GUILD_ID</code> is optional but worth setting. Turn on <strong>Developer Mode</strong> in Discord
+(User Settings → Advanced), then right-click your server icon → <strong>Copy Server ID</strong> and
+paste it after the <code>=</code>. This makes new slash commands appear <strong>instantly</strong> instead of
+taking up to an hour.</p>
+<h2>Step 2 — Write the bot</h2>
+<p>Make a file called <code>main.py</code> and type this in:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">discord.ext</span><span class="w"> </span><span class="kn">import</span> <span class="n">commands</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dotenv</span>
+
+<span class="n">load_dotenv</span><span class="p">()</span>
+<span class="n">TOKEN</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DISCORD_TOKEN&quot;</span><span class="p">)</span>
+<span class="n">GUILD_ID</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GUILD_ID&quot;</span><span class="p">)</span>
+
+<span class="n">intents</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Intents</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+<span class="n">intents</span><span class="o">.</span><span class="n">members</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">intents</span><span class="o">.</span><span class="n">message_content</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">bot</span> <span class="o">=</span> <span class="n">commands</span><span class="o">.</span><span class="n">Bot</span><span class="p">(</span><span class="n">command_prefix</span><span class="o">=</span><span class="s2">&quot;!&quot;</span><span class="p">,</span> <span class="n">intents</span><span class="o">=</span><span class="n">intents</span><span class="p">)</span>
+
+
+<span class="nd">@bot</span><span class="o">.</span><span class="n">event</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_ready</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Logged in as </span><span class="si">{</span><span class="n">bot</span><span class="o">.</span><span class="n">user</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">bot</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">GUILD_ID</span><span class="p">:</span>
+        <span class="n">guild</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Object</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">GUILD_ID</span><span class="p">))</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">copy_global_to</span><span class="p">(</span><span class="n">guild</span><span class="o">=</span><span class="n">guild</span><span class="p">)</span>
+        <span class="n">synced</span> <span class="o">=</span> <span class="k">await</span> <span class="n">bot</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">sync</span><span class="p">(</span><span class="n">guild</span><span class="o">=</span><span class="n">guild</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">synced</span> <span class="o">=</span> <span class="k">await</span> <span class="n">bot</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">sync</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Synced </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">synced</span><span class="p">)</span><span class="si">}</span><span class="s2"> commands&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@bot</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Check if the bot is alive.&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ping</span><span class="p">(</span><span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="s2">&quot;Pong! 🏓&quot;</span><span class="p">)</span>
+
+
+<span class="n">bot</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">TOKEN</span><span class="p">)</span>
+</code></pre></div>
+
+<h2>What each part does</h2>
+<ul>
+<li><strong><code>load_dotenv()</code> / <code>os.getenv</code></strong> — reads your token from the <code>.env</code> file.</li>
+<li><strong><code>intents</code></strong> — matches the switches you flipped in Lesson 03.</li>
+<li><strong><code>bot = commands.Bot(...)</code></strong> — creates the bot object.</li>
+<li><strong><code>on_ready</code></strong> — runs once the bot logs in; here we sync the slash commands.</li>
+<li><strong><code>@bot.tree.command</code></strong> — registers a slash command. <code>ping</code> becomes <code>/ping</code>.</li>
+<li><strong><code>interaction.response.send_message</code></strong> — how a slash command replies.</li>
+<li><strong><code>bot.run(TOKEN)</code></strong> — logs in and starts everything.</li>
+</ul>
+<h2>Step 3 — Run it</h2>
+<p>In the terminal (with <code>(venv)</code> showing):</p>
+<div class="codehilite"><pre><span></span><code>python main.py
+</code></pre></div>
+
+<p>You should see <code>Logged in as ...</code> and <code>Synced 1 commands</code>. Your bot's dot turns green in
+Discord. Go to your server, type <code>/</code>, and pick <strong>ping</strong>. It replies <strong>Pong! 🏓</strong>.</p>
+<p>🎉 That's a working bot. To stop it, click the terminal and press <strong>Ctrl + C</strong>.</p>
+<blockquote>
+<p>⚠️ <strong>Nothing happened / red errors?</strong> The two classic first-run problems are a wrong
+token and forgetting to turn on intents. Both are covered on the Troubleshooting page.</p>
+</blockquote>
+<h2>Growing up: cogs</h2>
+<p>As we add embeds, moderation, and tickets, <code>main.py</code> would get huge. Real bots split
+features into separate files called <strong>cogs</strong>. The finished reference bot in the <code>bot/</code>
+folder is organized that way — <code>main.py</code> just loads <code>cogs/embeds.py</code>, <code>cogs/moderation.py</code>,
+and <code>cogs/tickets.py</code>. From here on, each lesson builds one cog.</p>
+<nav class="pn-row"><a class="pn prev" href="#l3"><span>Previous</span><b>Register Your Bot</b></a><a class="pn next" href="#l5"><span>Next</span><b>Embeds</b></a></nav>
+</article>
+<article class="ddc lesson" id="l5" data-idx="5">
+<h1>Lesson 05 — Embeds</h1>
+<p>Embeds are the clean, colored boxes you see all over Derpy's Designs — a banner on top, a
+bold title, description, fields, and that divider bar at the bottom. We'll build them up
+one piece at a time. By the end you'll have a reusable "brand style" that makes every
+future command look professional automatically.</p>
+<p>Work through the steps <strong>in order</strong> and run the bot after each one so you can see what each
+line adds.</p>
+<hr />
+<h2>Step 1 — Switch main.py over to cogs</h2>
+<p>As we add features, cramming everything into <code>main.py</code> gets messy. Real bots split features
+into files called <strong>cogs</strong>. Let's set that up now.</p>
+<p>Make a new folder called <code>cogs</code> in your project. Then replace your <code>main.py</code> with this
+version, which loads cogs and syncs commands:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">discord.ext</span><span class="w"> </span><span class="kn">import</span> <span class="n">commands</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dotenv</span>
+
+<span class="n">load_dotenv</span><span class="p">()</span>
+<span class="n">TOKEN</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DISCORD_TOKEN&quot;</span><span class="p">)</span>
+<span class="n">GUILD_ID</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GUILD_ID&quot;</span><span class="p">)</span>
+
+<span class="n">intents</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Intents</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+<span class="n">intents</span><span class="o">.</span><span class="n">members</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">intents</span><span class="o">.</span><span class="n">message_content</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">bot</span> <span class="o">=</span> <span class="n">commands</span><span class="o">.</span><span class="n">Bot</span><span class="p">(</span><span class="n">command_prefix</span><span class="o">=</span><span class="s2">&quot;!&quot;</span><span class="p">,</span> <span class="n">intents</span><span class="o">=</span><span class="n">intents</span><span class="p">)</span>
+
+<span class="n">COGS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cogs.embeds&quot;</span><span class="p">]</span>   <span class="c1"># we&#39;ll add more cogs to this list later</span>
+
+
+<span class="nd">@bot</span><span class="o">.</span><span class="n">event</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_ready</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Logged in as </span><span class="si">{</span><span class="n">bot</span><span class="o">.</span><span class="n">user</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">GUILD_ID</span><span class="p">:</span>
+        <span class="n">guild</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Object</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">GUILD_ID</span><span class="p">))</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">copy_global_to</span><span class="p">(</span><span class="n">guild</span><span class="o">=</span><span class="n">guild</span><span class="p">)</span>
+        <span class="n">synced</span> <span class="o">=</span> <span class="k">await</span> <span class="n">bot</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">sync</span><span class="p">(</span><span class="n">guild</span><span class="o">=</span><span class="n">guild</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">synced</span> <span class="o">=</span> <span class="k">await</span> <span class="n">bot</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">sync</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Synced </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">synced</span><span class="p">)</span><span class="si">}</span><span class="s2"> commands&quot;</span><span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">bot</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">cog</span> <span class="ow">in</span> <span class="n">COGS</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">bot</span><span class="o">.</span><span class="n">load_extension</span><span class="p">(</span><span class="n">cog</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">bot</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">TOKEN</span><span class="p">)</span>
+
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+
+<p>Don't run it yet — <code>cogs.embeds</code> doesn't exist. That's Step 3.</p>
+<hr />
+<h2>Step 2 — Make a branding file</h2>
+<p>Here's the trick to a consistent-looking bot: keep all your branding in ONE file, then
+reuse it everywhere. Make a file called <code>config.py</code> next to <code>main.py</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
+
+<span class="n">STUDIO_NAME</span> <span class="o">=</span> <span class="s2">&quot;Derpy&#39;s Designs&quot;</span>
+<span class="n">TAGLINE</span> <span class="o">=</span> <span class="s2">&quot;Where Creativity Meets Precision&quot;</span>
+<span class="n">BRAND_COLOR</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;#1e9bff&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">branded_embed</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">embed</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Embed</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">BRAND_COLOR</span><span class="p">)</span>
+    <span class="n">embed</span><span class="o">.</span><span class="n">set_footer</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STUDIO_NAME</span><span class="si">}</span><span class="s2"> • </span><span class="si">{</span><span class="n">TAGLINE</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">embed</span>
+</code></pre></div>
+
+<p><code>branded_embed()</code> is a small helper that hands back an embed that already has your color
+and footer. Change the name or color here and <strong>every</strong> embed in the bot updates. (This is
+your studio name — swap in whatever you like.)</p>
+<hr />
+<h2>Step 3 — Your first embed command</h2>
+<p>Make a file <code>cogs/embeds.py</code>. We'll start with the cog skeleton and one command:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">discord</span><span class="w"> </span><span class="kn">import</span> <span class="n">app_commands</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">discord.ext</span><span class="w"> </span><span class="kn">import</span> <span class="n">commands</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">config</span><span class="w"> </span><span class="kn">import</span> <span class="n">branded_embed</span><span class="p">,</span> <span class="n">STUDIO_NAME</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Embeds</span><span class="p">(</span><span class="n">commands</span><span class="o">.</span><span class="n">Cog</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bot</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bot</span> <span class="o">=</span> <span class="n">bot</span>
+
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Show info about this server.&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">serverinfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">interaction</span><span class="o">.</span><span class="n">guild</span>
+        <span class="n">embed</span> <span class="o">=</span> <span class="n">branded_embed</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">STUDIO_NAME</span><span class="si">}</span><span class="s2"> community.&quot;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">embed</span><span class="o">=</span><span class="n">embed</span><span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="n">bot</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">bot</span><span class="o">.</span><span class="n">add_cog</span><span class="p">(</span><span class="n">Embeds</span><span class="p">(</span><span class="n">bot</span><span class="p">))</span>
+</code></pre></div>
+
+<p><strong>▶ Run it now</strong> (<code>python main.py</code>) and try <code>/serverinfo</code>. You get a small branded embed
+with your server's name. It's plain — we'll fill it in next.</p>
+<blockquote>
+<p>The <code>setup</code> function at the bottom is what lets <code>main.py</code> load this file. Every cog needs
+one.</p>
+</blockquote>
+<hr />
+<h2>Step 4 — Add fields</h2>
+<p>Fields are little label/value pairs. Add these lines inside <code>serverinfo</code>, right after the
+<code>embed = ...</code> line:</p>
+<div class="codehilite"><pre><span></span><code>        <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">icon</span><span class="p">:</span>
+            <span class="n">embed</span><span class="o">.</span><span class="n">set_thumbnail</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">icon</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+
+        <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Members&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">member_count</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Channels&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">channels</span><span class="p">),</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Roles&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">roles</span><span class="p">),</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>▶ Run it again.</strong> Now <code>/serverinfo</code> shows the server icon in the corner and three stats
+side by side. <code>inline=True</code> is what puts them in a row instead of stacked.</p>
+<p>Play with it: add another field for the owner —
+<code>embed.add_field(name="Owner", value=g.owner.mention, inline=True)</code>.</p>
+<hr />
+<h2>Step 5 — Panels: banner on top + divider bar</h2>
+<p>The big Derpy's Designs panels (Assistance, Market, Order Here) have an image banner on
+top and a bar at the bottom. A single embed can only hold one image, so the trick is to
+send <strong>two embeds together</strong> — Discord stacks them into one card.</p>
+<p>Add this to the bottom of <code>config.py</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">BANNERS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;welcome&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>   <span class="c1"># paste an image link here later</span>
+<span class="n">DIVIDER_IMAGE</span> <span class="o">=</span> <span class="kc">None</span>          <span class="c1"># the thin bar at the bottom</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">panel</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">banner</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">embeds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">banner</span><span class="p">:</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Embed</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">BRAND_COLOR</span><span class="p">)</span>
+        <span class="n">top</span><span class="o">.</span><span class="n">set_image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">banner</span><span class="p">)</span>
+        <span class="n">embeds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top</span><span class="p">)</span>
+
+    <span class="n">body</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Embed</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">BRAND_COLOR</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">DIVIDER_IMAGE</span><span class="p">:</span>
+        <span class="n">body</span><span class="o">.</span><span class="n">set_image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">DIVIDER_IMAGE</span><span class="p">)</span>
+    <span class="n">body</span><span class="o">.</span><span class="n">set_footer</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STUDIO_NAME</span><span class="si">}</span><span class="s2"> • </span><span class="si">{</span><span class="n">TAGLINE</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">embeds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">embeds</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>How do I get an image link?</strong> Upload your banner image to any Discord channel, then
+right-click it → <strong>Copy Link</strong>, and paste that link as the <code>"welcome"</code> value (and as
+<code>DIVIDER_IMAGE</code> for the bar). Leaving them <code>None</code> just skips the images for now.</p>
+</blockquote>
+<hr />
+<h2>Step 6 — A command that posts a panel</h2>
+<p>Add a second command to your <code>Embeds</code> cog. Update the import line at the top first:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">config</span><span class="w"> </span><span class="kn">import</span> <span class="n">branded_embed</span><span class="p">,</span> <span class="n">panel</span><span class="p">,</span> <span class="n">STUDIO_NAME</span><span class="p">,</span> <span class="n">BANNERS</span>
+</code></pre></div>
+
+<p>Then add this command inside the class:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Post a branded announcement panel.&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Panel title&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;What it should say&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">manage_guild</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">announce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">embeds</span><span class="o">=</span><span class="n">panel</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">banner</span><span class="o">=</span><span class="n">BANNERS</span><span class="p">[</span><span class="s2">&quot;welcome&quot;</span><span class="p">]))</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="s2">&quot;Posted!&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>▶ Run it</strong> and try <code>/announce title:Welcome message:Thanks for joining!</code>. You get a
+branded panel. Once you paste a real banner link into <code>config.py</code>, the same command
+produces the full Derpy's Designs look — banner, title, text, divider bar.</p>
+<ul>
+<li>The extra <code>title</code> and <code>message</code> arguments become fill-in boxes in Discord.</li>
+<li><code>@app_commands.checks.has_permissions(manage_guild=True)</code> means only staff can post
+  panels. (More on permission checks in the next lesson.)</li>
+<li><code>ephemeral=True</code> makes the "Posted!" reply visible only to you.</li>
+</ul>
+<hr />
+<h2>What you've got</h2>
+<p>A branding file every future feature will reuse, a real info embed, and the panel style
+that matches the studio's look. Next we lock down some commands and build the moderation
+toolkit.</p>
+<nav class="pn-row"><a class="pn prev" href="#l4"><span>Previous</span><b>Your First Bot</b></a><a class="pn next" href="#l6"><span>Next</span><b>Moderation</b></a></nav>
+</article>
+<article class="ddc lesson" id="l6" data-idx="6">
+<h1>Lesson 06 — Moderation Commands</h1>
+<p>Now the practical stuff: commands that keep a server tidy — <code>/kick</code>, <code>/ban</code>, <code>/timeout</code>,
+<code>/purge</code>, and <code>/warn</code>. We'll add them one at a time so you see each one work before moving
+on. Every command is locked so only staff can use it.</p>
+<hr />
+<h2>Step 1 — New cog, wired up</h2>
+<p>Make a file <code>cogs/moderation.py</code> with this starter:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">discord</span><span class="w"> </span><span class="kn">import</span> <span class="n">app_commands</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">discord.ext</span><span class="w"> </span><span class="kn">import</span> <span class="n">commands</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Moderation</span><span class="p">(</span><span class="n">commands</span><span class="o">.</span><span class="n">Cog</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bot</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bot</span> <span class="o">=</span> <span class="n">bot</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="n">bot</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">bot</span><span class="o">.</span><span class="n">add_cog</span><span class="p">(</span><span class="n">Moderation</span><span class="p">(</span><span class="n">bot</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Now tell <code>main.py</code> to load it. Find the <code>COGS</code> line and add the new cog:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">COGS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cogs.embeds&quot;</span><span class="p">,</span> <span class="s2">&quot;cogs.moderation&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+<p><strong>▶ Run it.</strong> Nothing new appears yet (no commands), but it should start with no errors.
+If it crashes, fix that before adding commands.</p>
+<hr />
+<h2>Step 2 — A shared result helper</h2>
+<p>Every mod action will reply with the same style of embed: who, by whom, and why. Rather
+than write that five times, add one helper <strong>above</strong> the class (below the imports):</p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">result_embed</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">moderator</span><span class="p">,</span> <span class="n">reason</span><span class="p">,</span> <span class="n">color</span><span class="p">):</span>
+    <span class="n">embed</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Embed</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">action</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+    <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Member&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">member</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">member</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Moderator&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">moderator</span><span class="o">.</span><span class="n">mention</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Reason&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">reason</span> <span class="ow">or</span> <span class="s2">&quot;No reason given&quot;</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">embed</span>
+</code></pre></div>
+
+<hr />
+<h2>Step 3 — /kick</h2>
+<p>Add this <strong>inside</strong> the <code>Moderation</code> class:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Kick a member from the server.&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">member</span><span class="o">=</span><span class="s2">&quot;Who to kick&quot;</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Why&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">kick_members</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kick</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">,</span> <span class="n">member</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Member</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">member</span><span class="o">.</span><span class="n">top_role</span> <span class="o">&gt;=</span> <span class="n">interaction</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">top_role</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span>
+                <span class="s2">&quot;You can&#39;t kick someone ranked equal to or above you.&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">await</span> <span class="n">member</span><span class="o">.</span><span class="n">kick</span><span class="p">(</span><span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">)</span>
+        <span class="n">embed</span> <span class="o">=</span> <span class="n">result_embed</span><span class="p">(</span><span class="s2">&quot;Member Kicked&quot;</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">interaction</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">reason</span><span class="p">,</span> <span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">red</span><span class="p">())</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">embed</span><span class="o">=</span><span class="n">embed</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Read the important lines:
+- <code>@app_commands.checks.has_permissions(kick_members=True)</code> — only people with the <strong>Kick
+  Members</strong> permission can use it. Everyone else is refused automatically.
+- The <code>if member.top_role &gt;= ...</code> block stops a mod from kicking someone ranked above them.
+- <code>await member.kick(...)</code> is the line that actually does it.</p>
+<p><strong>▶ Run it</strong> and test <code>/kick</code> on a throwaway alt account in your test server.</p>
+<hr />
+<h2>Step 4 — /ban</h2>
+<p>Almost identical. Add it inside the class:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Ban a member from the server.&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">member</span><span class="o">=</span><span class="s2">&quot;Who to ban&quot;</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Why&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">ban_members</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ban</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">,</span> <span class="n">member</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Member</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">member</span><span class="o">.</span><span class="n">top_role</span> <span class="o">&gt;=</span> <span class="n">interaction</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">top_role</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span>
+                <span class="s2">&quot;You can&#39;t ban someone ranked equal to or above you.&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">await</span> <span class="n">member</span><span class="o">.</span><span class="n">ban</span><span class="p">(</span><span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">)</span>
+        <span class="n">embed</span> <span class="o">=</span> <span class="n">result_embed</span><span class="p">(</span><span class="s2">&quot;Member Banned&quot;</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">interaction</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">reason</span><span class="p">,</span> <span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">red</span><span class="p">())</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">embed</span><span class="o">=</span><span class="n">embed</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Only three things changed from <code>/kick</code>: the name, <code>ban_members=True</code>, and
+<code>await member.ban(...)</code>. <strong>▶ Run and test.</strong></p>
+<hr />
+<h2>Step 5 — /timeout (the built-in mute)</h2>
+<p>You don't need a "Muted" role anymore — Discord has timeouts built in:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Time a member out (mute) for some minutes.&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">member</span><span class="o">=</span><span class="s2">&quot;Who&quot;</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="s2">&quot;How long&quot;</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Why&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">moderate_members</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">,</span> <span class="n">member</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Member</span><span class="p">,</span> <span class="n">minutes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">until</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">minutes</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">member</span><span class="o">.</span><span class="n">timeout</span><span class="p">(</span><span class="n">until</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">)</span>
+        <span class="n">embed</span> <span class="o">=</span> <span class="n">result_embed</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Timed Out for </span><span class="si">{</span><span class="n">minutes</span><span class="si">}</span><span class="s2"> min&quot;</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span>
+                             <span class="n">interaction</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">reason</span><span class="p">,</span> <span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">red</span><span class="p">())</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">embed</span><span class="o">=</span><span class="n">embed</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>▶ Test</strong> <code>/timeout minutes:1</code> on your alt — it gets muted for a minute.</p>
+<hr />
+<h2>Step 6 — /purge (bulk delete)</h2>
+<div class="codehilite"><pre><span></span><code>    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Delete a bunch of recent messages.&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="s2">&quot;How many (max 100)&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">manage_messages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">,</span> <span class="n">amount</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">amount</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">amount</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">defer</span><span class="p">(</span><span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">deleted</span> <span class="o">=</span> <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">purge</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="n">amount</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">followup</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deleted </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">deleted</span><span class="p">)</span><span class="si">}</span><span class="s2"> messages.&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Deleting lots of messages takes a moment, so we call <code>defer()</code> first — that tells Discord
+"give me a sec" so it doesn't think the command failed. Afterwards we reply with
+<code>followup.send</code>. <strong>▶ Test</strong> <code>/purge amount:5</code>.</p>
+<hr />
+<h2>Step 7 — /warn (with a DM)</h2>
+<div class="codehilite"><pre><span></span><code>    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Warn a member (DMs them).&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">member</span><span class="o">=</span><span class="s2">&quot;Who&quot;</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;What for&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">moderate_members</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">warn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">,</span> <span class="n">member</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Member</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">embed</span> <span class="o">=</span> <span class="n">result_embed</span><span class="p">(</span><span class="s2">&quot;Member Warned&quot;</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">interaction</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">reason</span><span class="p">,</span>
+                             <span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">orange</span><span class="p">())</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">embed</span><span class="o">=</span><span class="n">embed</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">member</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You were warned in **</span><span class="si">{</span><span class="n">interaction</span><span class="o">.</span><span class="n">guild</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">**: </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">discord</span><span class="o">.</span><span class="n">Forbidden</span><span class="p">:</span>
+            <span class="k">pass</span>  <span class="c1"># their DMs are closed; nothing we can do</span>
+</code></pre></div>
+
+<p><code>try / except discord.Forbidden</code> catches the case where the member has DMs off, so the
+command doesn't crash. <strong>▶ Test</strong> <code>/warn</code>.</p>
+<hr />
+<h2>Step 8 — One friendly error message for the whole cog</h2>
+<p>Right now, when someone without permission tries a command, Discord shows an ugly error.
+Add this method <strong>inside the class</strong> to catch that once for every command:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">cog_app_command_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">app_commands</span><span class="o">.</span><span class="n">MissingPermissions</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;You don&#39;t have permission to use that command.&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Something went wrong: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
+            <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">followup</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>▶ Test</strong> by trying a command from an account <strong>without</strong> mod permissions — you now get a
+clean "you don't have permission" message.</p>
+<hr />
+<blockquote>
+<p>⚠️ <strong>Command runs but says "Missing Permissions"?</strong> That's Discord refusing the <em>bot</em>,
+not you. The bot's own role must sit <strong>above</strong> the member it's acting on. Fix it in
+Server Settings → Roles by dragging the bot's role up. This trips up almost everyone.</p>
+</blockquote>
+<p>You now have a full moderation toolkit. Last big feature: the ticket system.</p>
+<nav class="pn-row"><a class="pn prev" href="#l5"><span>Previous</span><b>Embeds</b></a><a class="pn next" href="#l7"><span>Next</span><b>Ticket System</b></a></nav>
+</article>
+<article class="ddc lesson" id="l7" data-idx="7">
+<h1>Lesson 07 — Ticket System</h1>
+<p>This is the big one. We're building the support-ticket panel you see on Derpy's Designs: a
+branded panel with a <strong>dropdown menu</strong>. When someone picks an option, the bot spins up a
+private channel only they and staff can see, with a <strong>Close</strong> button that saves a
+transcript and deletes the channel.</p>
+<p>It sounds like a lot, but we'll build it in small pieces and run as we go. New concept
+here: <strong>Views</strong> — the buttons and dropdowns you attach to a message.</p>
+<hr />
+<h2>Step 0 — Server prep</h2>
+<p>In your test server, create:
+- a <strong>role</strong> called <code>Staff</code> (this role will see tickets),
+- optionally a <strong>channel</strong> called <code>ticket-logs</code> (closed-ticket transcripts land here).</p>
+<hr />
+<h2>Step 1 — New cog, wired up</h2>
+<p>Make <code>cogs/tickets.py</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">discord</span><span class="w"> </span><span class="kn">import</span> <span class="n">app_commands</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">discord.ext</span><span class="w"> </span><span class="kn">import</span> <span class="n">commands</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">config</span><span class="w"> </span><span class="kn">import</span> <span class="n">BRAND_COLOR</span><span class="p">,</span> <span class="n">STUDIO_NAME</span><span class="p">,</span> <span class="n">BANNERS</span><span class="p">,</span> <span class="n">branded_embed</span><span class="p">,</span> <span class="n">panel</span>
+
+<span class="n">STAFF_ROLE_NAME</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;STAFF_ROLE_NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;Staff&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Tickets</span><span class="p">(</span><span class="n">commands</span><span class="o">.</span><span class="n">Cog</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bot</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bot</span> <span class="o">=</span> <span class="n">bot</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="n">bot</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">bot</span><span class="o">.</span><span class="n">add_cog</span><span class="p">(</span><span class="n">Tickets</span><span class="p">(</span><span class="n">bot</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Add it to <code>main.py</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">COGS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cogs.embeds&quot;</span><span class="p">,</span> <span class="s2">&quot;cogs.moderation&quot;</span><span class="p">,</span> <span class="s2">&quot;cogs.tickets&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+<p><strong>▶ Run it</strong> — should start with no errors.</p>
+<hr />
+<h2>Step 2 — The Close button (a View)</h2>
+<p>A <strong>View</strong> is a box that holds buttons/dropdowns. Let's make the simplest one: a single
+red <strong>Close</strong> button. Add this class <strong>above</strong> the <code>Tickets</code> class:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CloseTicket</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Close&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">discord</span><span class="o">.</span><span class="n">ButtonStyle</span><span class="o">.</span><span class="n">red</span><span class="p">,</span>
+                       <span class="n">emoji</span><span class="o">=</span><span class="s2">&quot;🔒&quot;</span><span class="p">,</span> <span class="n">custom_id</span><span class="o">=</span><span class="s2">&quot;ticket:close&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">,</span> <span class="n">button</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">Button</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="s2">&quot;Closing…&quot;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</code></pre></div>
+
+<ul>
+<li><code>timeout=None</code> keeps the button working forever (even after the bot restarts).</li>
+<li><code>@discord.ui.button(...)</code> turns the method below it into a clickable button.</li>
+<li><code>custom_id</code> is a permanent name for the button — we need it for the "works after restart"
+  trick later.</li>
+</ul>
+<p>We'll test this in a moment once tickets exist.</p>
+<hr />
+<h2>Step 3 — Creating the ticket channel</h2>
+<p>This is the heart of the system: make a private channel for the person who opened the
+ticket. Add this function <strong>above</strong> the <code>CloseTicket</code> class:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_ticket</span><span class="p">(</span><span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">guild</span> <span class="o">=</span> <span class="n">interaction</span><span class="o">.</span><span class="n">guild</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="n">interaction</span><span class="o">.</span><span class="n">user</span>
+
+    <span class="c1"># Don&#39;t let someone open a second ticket if they already have one.</span>
+    <span class="n">existing</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">guild</span><span class="o">.</span><span class="n">text_channels</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;ticket-</span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">existing</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;You already have a ticket open: </span><span class="si">{</span><span class="n">existing</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">staff_role</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">guild</span><span class="o">.</span><span class="n">roles</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">STAFF_ROLE_NAME</span><span class="p">)</span>
+
+    <span class="c1"># Hide from everyone; allow the author, staff, and the bot.</span>
+    <span class="n">overwrites</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">guild</span><span class="o">.</span><span class="n">default_role</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">PermissionOverwrite</span><span class="p">(</span><span class="n">view_channel</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">author</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">PermissionOverwrite</span><span class="p">(</span><span class="n">view_channel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">send_messages</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">guild</span><span class="o">.</span><span class="n">me</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">PermissionOverwrite</span><span class="p">(</span><span class="n">view_channel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">send_messages</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">staff_role</span><span class="p">:</span>
+        <span class="n">overwrites</span><span class="p">[</span><span class="n">staff_role</span><span class="p">]</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">PermissionOverwrite</span><span class="p">(</span><span class="n">view_channel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">send_messages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">channel</span> <span class="o">=</span> <span class="k">await</span> <span class="n">guild</span><span class="o">.</span><span class="n">create_text_channel</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;ticket-</span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">overwrites</span><span class="o">=</span><span class="n">overwrites</span><span class="p">,</span>
+        <span class="n">topic</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2"> ticket for </span><span class="si">{</span><span class="n">author</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">embed</span> <span class="o">=</span> <span class="n">branded_embed</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2"> ticket&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Hey </span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">, a staff member will be with you soon.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot;Use the button below when you&#39;re done.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">author</span><span class="o">.</span><span class="n">mention</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="n">embed</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="n">CloseTicket</span><span class="p">())</span>
+    <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Your ticket is ready: </span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The key idea is <strong>permission overwrites</strong> — a per-channel list of who can see it. We hide
+it from <code>@everyone</code>, then add the author and the Staff role back in. Notice the Close
+button gets attached with <code>view=CloseTicket()</code>.</p>
+<hr />
+<h2>Step 4 — The dropdown</h2>
+<p>Now the menu people pick from. First, list your categories near the top of the file (under
+<code>STAFF_ROLE_NAME</code>):</p>
+<div class="codehilite"><pre><span></span><code><span class="n">CATEGORIES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;General Support&quot;</span><span class="p">,</span> <span class="s2">&quot;Questions, feedback, or anything else&quot;</span><span class="p">,</span> <span class="s2">&quot;💬&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Payment / Refund&quot;</span><span class="p">,</span> <span class="s2">&quot;Billing and refund help&quot;</span><span class="p">,</span> <span class="s2">&quot;💳&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Partnership&quot;</span><span class="p">,</span> <span class="s2">&quot;Partnership and event requests&quot;</span><span class="p">,</span> <span class="s2">&quot;🤝&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+</code></pre></div>
+
+<p>Then add the dropdown class (put it above the <code>Tickets</code> class):</p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TicketDropdown</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">Select</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">discord</span><span class="o">.</span><span class="n">SelectOption</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span> <span class="n">emoji</span><span class="o">=</span><span class="n">emoji</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">emoji</span> <span class="ow">in</span> <span class="n">CATEGORIES</span>
+        <span class="p">]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">placeholder</span><span class="o">=</span><span class="s2">&quot;Select what you need help with…&quot;</span><span class="p">,</span>
+                         <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span> <span class="n">custom_id</span><span class="o">=</span><span class="s2">&quot;ticket:open&quot;</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">create_ticket</span><span class="p">(</span><span class="n">interaction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TicketPanel</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_item</span><span class="p">(</span><span class="n">TicketDropdown</span><span class="p">())</span>
+</code></pre></div>
+
+<ul>
+<li>A <code>Select</code> is a dropdown. Each <code>SelectOption</code> is a row in it.</li>
+<li><code>callback</code> runs when someone picks an option. <code>self.values[0]</code> is what they chose, and we
+  hand it straight to <code>create_ticket</code>.</li>
+<li><code>TicketPanel</code> is the View that holds the dropdown.</li>
+</ul>
+<p>Want to change the options later? Just edit the <code>CATEGORIES</code> list — that's the whole point
+of keeping it up top.</p>
+<hr />
+<h2>Step 5 — The /ticketpanel command</h2>
+<p>Add this command <strong>inside</strong> the <code>Tickets</code> class so staff can post the panel:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Post the ticket panel here (staff only).&quot;</span><span class="p">)</span>
+    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">manage_guild</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ticketpanel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
+        <span class="n">embeds</span> <span class="o">=</span> <span class="n">panel</span><span class="p">(</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;🎫 | Support&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Need a hand? Pick an option from the dropdown below to open a &quot;</span>
+                        <span class="s2">&quot;private ticket.&quot;</span><span class="p">,</span>
+            <span class="n">banner</span><span class="o">=</span><span class="n">BANNERS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;assistance&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">embeds</span><span class="o">=</span><span class="n">embeds</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="n">TicketPanel</span><span class="p">())</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="s2">&quot;Panel posted!&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Add an <code>"assistance"</code> key to your <code>BANNERS</code> dict back in <code>config.py</code> (set it to a banner
+image link, or <code>None</code> for now):</p>
+<div class="codehilite"><pre><span></span><code><span class="n">BANNERS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;welcome&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;assistance&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+</code></pre></div>
+
+<p><strong>▶ Run it.</strong> Use <code>/ticketpanel</code>, then pick an option in the dropdown. A private
+<code>ticket-…</code> channel appears with a welcome embed and a Close button. Click <strong>Close</strong> — the
+channel deletes. It works!</p>
+<hr />
+<h2>Step 6 — Make the buttons survive a restart</h2>
+<p>There's one catch: right now, if you restart the bot, the old panel's dropdown and close
+buttons stop responding. Fix it by re-registering the Views on startup. Add this method
+inside the <code>Tickets</code> class:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">cog_load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bot</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">TicketPanel</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bot</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">CloseTicket</span><span class="p">())</span>
+</code></pre></div>
+
+<p>Because we gave every button and dropdown a <code>custom_id</code>, Discord can reconnect them to the
+code after a restart. <strong>▶ Restart the bot and click an old panel</strong> — it works now.</p>
+<hr />
+<h2>Step 7 — Save a transcript on close</h2>
+<p>Deleting a ticket loses the conversation. Let's save it first. Replace your <code>close</code> method
+in <code>CloseTicket</code> with this fuller version:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="nd">@discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Close&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">discord</span><span class="o">.</span><span class="n">ButtonStyle</span><span class="o">.</span><span class="n">red</span><span class="p">,</span>
+                       <span class="n">emoji</span><span class="o">=</span><span class="s2">&quot;🔒&quot;</span><span class="p">,</span> <span class="n">custom_id</span><span class="o">=</span><span class="s2">&quot;ticket:close&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">,</span> <span class="n">button</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">Button</span><span class="p">):</span>
+        <span class="n">channel</span> <span class="o">=</span> <span class="n">interaction</span><span class="o">.</span><span class="n">channel</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="s2">&quot;Saving transcript and closing…&quot;</span><span class="p">)</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">channel</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">oldest_first</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">stamp</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">created_at</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">stamp</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">author</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;(no messages)&quot;</span>
+
+        <span class="n">log_channel</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">interaction</span><span class="o">.</span><span class="n">guild</span><span class="o">.</span><span class="n">text_channels</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ticket-logs&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log_channel</span><span class="p">:</span>
+            <span class="n">file</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">transcript</span><span class="o">.</span><span class="n">encode</span><span class="p">()),</span> <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.txt&quot;</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">log_channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transcript for `</span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">`&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">)</span>
+
+        <span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</code></pre></div>
+
+<ul>
+<li><code>channel.history(...)</code> walks through every message in the ticket.</li>
+<li>We build one big text string, wrap it in a file, and drop it in <code>#ticket-logs</code> before
+  deleting the channel.</li>
+</ul>
+<p><strong>▶ Final test:</strong> open a ticket, chat a little, hit Close. The channel disappears and a
+<code>.txt</code> transcript shows up in <code>#ticket-logs</code>.</p>
+<hr />
+<h2>You built a ticket system! 🎉</h2>
+<p>Dropdown menu, private channels, permissions, persistent buttons, and transcripts — that's
+a feature plenty of paid bots charge for. Compare your <code>cogs/tickets.py</code> against the one in
+the <code>bot/</code> folder if anything misbehaves. Last stop: keeping your bot online 24/7.</p>
+<nav class="pn-row"><a class="pn prev" href="#l6"><span>Previous</span><b>Moderation</b></a><a class="pn next" href="#l8"><span>Next</span><b>Hosting & Next</b></a></nav>
+</article>
+<article class="ddc lesson" id="l8" data-idx="8">
+<h1>Lesson 08 — Hosting &amp; Next Steps</h1>
+<p>Your bot only runs while <code>python main.py</code> is running on your computer. Close the terminal
+or shut down, and the bot goes offline. This lesson covers keeping it online 24/7 and where
+to go from here.</p>
+<h2>Option 1 — Run it on your own PC (free, simple)</h2>
+<p>Totally fine while you're learning and testing. Just know the bot is offline whenever your
+computer is off or asleep. Nothing to set up beyond what you already have.</p>
+<h2>Option 2 — A host that runs it 24/7</h2>
+<p>To keep the bot online all the time, it needs to live on a computer that never sleeps — a
+<strong>host</strong>. The usual choices:</p>
+<ul>
+<li><strong>A VPS</strong> (a small rented Linux server, e.g. from a budget provider) — the most reliable
+  and what most serious bots use. Around a few dollars a month.</li>
+<li><strong>A bot-hosting service</strong> — sites built specifically for hosting Discord bots. Easiest to
+  start with; you upload your files and hit start.</li>
+</ul>
+<p>The steps are similar everywhere:</p>
+<ol>
+<li>Put your project on the host (upload the files, or push to GitHub and pull it down).</li>
+<li>Install the requirements there:
+   <code>pip install -r requirements.txt</code></li>
+<li>Add your token. On a host you usually set <code>DISCORD_TOKEN</code> as an <strong>environment variable</strong>
+   in their dashboard instead of using a <code>.env</code> file — safer and the standard way.</li>
+<li>Start it:
+   <code>python main.py</code></li>
+<li>Keep it running after you log out. On a Linux VPS, a <strong>systemd service</strong> or a tool like
+   <code>screen</code>/<code>tmux</code> keeps the process alive. Managed hosts do this for you.</li>
+</ol>
+<blockquote>
+<p>🔒 <strong>Never upload your <code>.env</code></strong> or your token to GitHub. Add a file called
+<code>.gitignore</code> containing the line <code>.env</code> so git skips it. If a token ever leaks, reset it
+in the Developer Portal immediately.</p>
+</blockquote>
+<h2>The requirements.txt file</h2>
+<p>Any host needs to know which libraries to install. That's what <code>requirements.txt</code> is for:</p>
+<div class="codehilite"><pre><span></span><code>discord.py&gt;=2.3.2
+python-dotenv&gt;=1.0.0
+</code></pre></div>
+
+<p>Keep this file next to <code>main.py</code>. If you add a new library later, add it here too.</p>
+<h2>Where to go next</h2>
+<p>You've got embeds, moderation, and a ticket system. Natural next features to try:</p>
+<ul>
+<li><strong>A welcome message</strong> — greet new members with <code>@bot.event async def on_member_join</code>.</li>
+<li><strong>Reaction/button roles</strong> — let members give themselves roles (you already know Views!).</li>
+<li><strong>A logging cog</strong> — post to a mod-log channel when someone is kicked or banned.</li>
+<li><strong>Slash command groups</strong> — organize commands like <code>/ticket open</code>, <code>/ticket close</code>.</li>
+<li><strong>A database</strong> — store warnings so they persist. <code>sqlite3</code> (built into Python) is a great
+  first database.</li>
+</ul>
+<p>The official docs at <strong>discordpy.readthedocs.io</strong> are excellent, and the pattern you
+learned — a cog with commands and a <code>setup</code> function — is how you'll add every one of the
+features above.</p>
+<h2>You did it 🎉</h2>
+<p>You started from installing Python and finished with a real, branded Discord bot running
+the same kind of ticket panels Derpy's Designs uses. Rebrand it, extend it, and make it
+yours.</p>
+<nav class="pn-row"><a class="pn prev" href="#l7"><span>Previous</span><b>Ticket System</b></a><a class="pn next" href="#tb"><span>Next</span><b>Troubleshooting</b></a></nav>
+</article>
+<article class="ddc lesson" id="tb" data-idx="9">
+<h1>Troubleshooting</h1>
+<p>Almost every beginner hits the same handful of errors. Find yours here before pulling your
+hair out.</p>
+<h2>The bot won't start</h2>
+<p><strong><code>No token found</code> / <code>LoginFailure: Improper token</code></strong>
+Your token is missing or wrong. Check that:
+- You have a file named exactly <code>.env</code> (not <code>env.txt</code>) next to <code>main.py</code>.
+- The line reads <code>DISCORD_TOKEN=...</code> with your real token and no quotes or spaces.
+- The token hasn't been reset. If unsure, reset it in the Developer Portal and paste the
+  new one.</p>
+<p><strong><code>ModuleNotFoundError: No module named 'discord'</code></strong>
+The library isn't installed in the environment you're running. Make sure <code>(venv)</code> shows in
+your terminal, then run <code>pip install discord.py python-dotenv</code> again.</p>
+<p><strong><code>python</code> is not recognized</strong>
+Python isn't on your PATH. Reinstall Python and check <strong>"Add Python to PATH"</strong> on the first
+installer screen.</p>
+<p><strong>Windows: "running scripts is disabled on this system"</strong>
+Run this once, then activate the venv again:</p>
+<div class="codehilite"><pre><span></span><code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+</code></pre></div>
+
+<h2>The bot is online but…</h2>
+<p><strong>Slash commands don't show up</strong>
+- Set <code>GUILD_ID</code> in your <code>.env</code> to your test server's ID — commands then appear instantly.
+  Without it, global commands can take up to an hour.
+- Make sure you invited the bot with the <strong><code>applications.commands</code></strong> scope (Lesson 03). If
+  not, re-invite it with a new OAuth2 URL.
+- Fully close Discord and reopen it; the command list is cached.</p>
+<p><strong><code>PrivilegedIntentsRequired</code> on startup</strong>
+You didn't flip the intent switches. In the Developer Portal → your app → <strong>Bot</strong>, turn on
+<strong>Server Members</strong> and <strong>Message Content</strong>, then Save.</p>
+<p><strong>A command replies "This interaction failed"</strong>
+Usually the code errored before replying. Look at your terminal for the red traceback — it
+names the file and line. A very common cause is forgetting <code>await</code> in front of a Discord
+action.</p>
+<h2>Moderation problems</h2>
+<p><strong>"Missing Permissions" when a command runs</strong>
+Discord is refusing the <strong>bot</strong>, not you. Two fixes:
+- The bot's role must be <strong>above</strong> the member it's acting on. Drag it up in Server Settings
+  → Roles.
+- The bot must actually have the permission (Kick/Ban/etc.). Re-invite it with those boxes
+  checked, or grant the permission to its role.</p>
+<p><strong><code>/warn</code> says it couldn't DM the member</strong>
+That member has DMs turned off. Nothing you can do — the warning embed still posts in the
+channel.</p>
+<h2>Ticket problems</h2>
+<p><strong>Clicking the dropdown/Close does nothing after a restart</strong>
+You need the persistence step. Make sure the <code>cog_load</code> method with <code>self.bot.add_view(...)</code>
+is in your <code>Tickets</code> cog (Lesson 07, Step 6), and that every button/dropdown has a
+<code>custom_id</code>.</p>
+<p><strong>Ticket channel is visible to everyone</strong>
+Check the permission overwrites in <code>create_ticket</code> — <code>guild.default_role</code> must be set to
+<code>view_channel=False</code>.</p>
+<p><strong>No transcript appears on close</strong>
+The transcript is only saved if a channel named exactly <code>ticket-logs</code> exists. Create it, or
+remove that part of the code.</p>
+<h2>Still stuck?</h2>
+<p>Read the <strong>terminal output</strong> — the actual error message almost always names the file and
+line number. Copy the last few red lines and search them; you're rarely the first person to
+hit that exact error.</p>
+<nav class="pn-row"><a class="pn prev" href="#l8"><span>Previous</span><b>Hosting & Next</b></a></nav>
+</article></main></div>
+
+<script>
+(function(){
+ var links=[].slice.call(document.querySelectorAll('.nav-link'));
+ var ids=links.map(function(l){return l.dataset.target;});
+ var done=JSON.parse(localStorage.getItem('ddc_done')||'[]');
+ function paint(){links.forEach(function(l){if(done.indexOf(l.dataset.target)>-1)l.classList.add('done');});
+  var pct=Math.round(done.length/links.length*100);var f=document.querySelector('.progress-fill');var t=document.querySelector('.progress-txt');
+  if(f)f.style.width=pct+'%';if(t)t.textContent=done.length+' of '+links.length+' lessons visited';}
+ function show(id){if(ids.indexOf(id)<0)id=ids[0];
+  document.querySelectorAll('.lesson').forEach(function(a){a.classList.toggle('active',a.id===id);});
+  links.forEach(function(l){l.classList.toggle('active',l.dataset.target===id);});
+  if(done.indexOf(id)<0){done.push(id);localStorage.setItem('ddc_done',JSON.stringify(done));}
+  paint();window.scrollTo(0,0);}
+ (function(){
+ function enhance(){
+  document.querySelectorAll('.ddc .codehilite:not([data-cp])').forEach(function(box){
+   box.setAttribute('data-cp','1');
+   var b=document.createElement('button');b.className='copy-btn';b.type='button';b.textContent='Copy';
+   b.addEventListener('click',function(){navigator.clipboard.writeText(box.querySelector('pre').innerText).then(function(){
+    b.textContent='Copied';b.classList.add('done');setTimeout(function(){b.textContent='Copy';b.classList.remove('done');},1300);});});
+   box.appendChild(b);});
+  document.querySelectorAll('.ddc blockquote:not([data-cl])').forEach(function(q){
+   q.setAttribute('data-cl','1');var c=q.textContent.trim().charAt(0);
+   if(c==='⚠')q.classList.add('warn');else if(c==='✅')q.classList.add('good');});
+ }
+ if(document.readyState!=='loading')enhance();else document.addEventListener('DOMContentLoaded',enhance);
+})();
+ var root=document.documentElement;var saved=localStorage.getItem('ddc_theme');if(saved)root.setAttribute('data-theme',saved);
+ var tb=document.querySelector('.theme-btn');
+ function icon(){var d=root.getAttribute('data-theme');var dark=d?d==='dark':matchMedia('(prefers-color-scheme:dark)').matches;tb.textContent=dark?'☀':'☾';}
+ if(tb){tb.addEventListener('click',function(){var d=root.getAttribute('data-theme');var dark=d?d==='dark':matchMedia('(prefers-color-scheme:dark)').matches;var nx=dark?'light':'dark';root.setAttribute('data-theme',nx);localStorage.setItem('ddc_theme',nx);icon();});icon();matchMedia('(prefers-color-scheme:dark)').addEventListener('change',icon);}
+ window.addEventListener('hashchange',function(){show(location.hash.replace('#',''));});
+ paint();show((location.hash||'').replace('#','')||ids[0]);
+})();
+</script>
+
+</body>
+</html>
