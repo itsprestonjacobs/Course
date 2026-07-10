@@ -1,89 +1,120 @@
 <section class="ddc">
 <h1>Host It 24/7</h1>
-<p>Your bot only runs while <code>python main.py</code> is running on your computer. Close the terminal or
-shut down, and it goes offline. To keep it online around the clock, it needs to live on a
-computer that never sleeps — a <strong>host</strong>.</p>
-<h2>Step 1 — A requirements file</h2>
-<p>Any host needs to know which libraries to install. List them in <code>requirements.txt</code> next to
-<code>main.py</code>:</p>
+<p>Your bot only runs while <code>python main.py</code> is running somewhere. Close the terminal and it
+goes offline. This lesson covers the two easiest ways to keep it online: <strong>self-hosting on
+your own PC</strong>, and a <strong>free bot host (hollow.host)</strong> that runs it 24/7 for you.</p>
+<h2>First: the requirements file</h2>
+<p>Any host — including your own PC — needs to know which libraries to install. List them in
+<code>requirements.txt</code> next to <code>main.py</code>:</p>
 <div class="codehilite"><pre><span></span><code>discord.py&gt;=2.3.2
 python-dotenv&gt;=1.0.0
-aiohttp
+aiohttp&gt;=3.9.0
 </code></pre></div>
 
-<p>Add any other library you <code>pip install</code>ed. On the host you'll run
-<code>pip install -r requirements.txt</code> to get them all at once.</p>
-<h2>Option A — Run on your own PC (free)</h2>
-<p>Totally fine while learning. The bot is online only while your computer is on and the script
-is running. Nothing extra to set up.</p>
-<h2>Option B — A VPS (the standard for real bots)</h2>
-<p>A <strong>VPS</strong> is a small rented Linux computer that stays on 24/7 (a few dollars a month). The
-steps once you have one:</p>
+<p>Add any other library you <code>pip install</code>ed. Installing them anywhere is then one command:
+<code>pip install -r requirements.txt</code>.</p>
+<hr />
+<h2>Option A — Self-host on your own PC</h2>
+<p>The simplest option: run the bot on your own computer. Free, no accounts, full control.</p>
+<h3>Steps</h3>
 <ol>
-<li><strong>Get your code there.</strong> Easiest: push to GitHub (last lesson), then on the server run
-   <code>git clone https://github.com/you/your-repo.git</code>.</li>
-<li><strong>Install Python and the requirements:</strong>
-   <code>pip install -r requirements.txt</code></li>
-<li><strong>Add your token.</strong> On a server, set it as an <strong>environment variable</strong> instead of a
-   <code>.env</code> file (safer and standard). How you do this depends on the host; often it's a
-   dashboard field or an <code>export DISCORD_TOKEN=...</code> line.</li>
-<li><strong>Keep it running after you log out.</strong> If you just run <code>python main.py</code> and disconnect,
-   it stops. Use one of these:</li>
+<li>Open your project in VS Code and open the terminal.</li>
+<li>Activate your virtual environment (<code>venv\Scripts\Activate</code> on Windows).</li>
+<li>Run it:
+   <code>python main.py</code></li>
+<li><strong>Leave that terminal open.</strong> As long as it's running and your PC is on, the bot is
+   online.</li>
 </ol>
-<h3>Keep-alive with a systemd service (recommended on Linux)</h3>
-<p>Create <code>/etc/systemd/system/mybot.service</code>:</p>
-<div class="codehilite"><pre><span></span><code>[Unit]
-Description=My Discord Bot
-After=network.target
-
-[Service]
-WorkingDirectory=/home/youruser/your-repo
-ExecStart=/usr/bin/python3 main.py
-Restart=always
-Environment=DISCORD_TOKEN=your-token-here
-
-[Install]
-WantedBy=multi-user.target
-</code></pre></div>
-
-<p>Then:</p>
-<div class="codehilite"><pre><span></span><code>sudo systemctl enable mybot     # start on boot
-sudo systemctl start mybot      # start now
-sudo systemctl status mybot     # check it&#39;s running
-</code></pre></div>
-
-<p><code>Restart=always</code> means if the bot crashes, the server restarts it automatically. That's the
-big win of systemd.</p>
-<h3>The quick-and-dirty way</h3>
-<p>For testing, <code>screen</code> or <code>tmux</code> keeps a session alive after you disconnect:</p>
-<div class="codehilite"><pre><span></span><code>screen -S bot
-python3 main.py
-# press Ctrl+A then D to &quot;detach&quot; and leave it running
-</code></pre></div>
-
-<h2>Option C — A managed bot host</h2>
-<p>Several services are built specifically to host Discord bots: you connect your GitHub repo
-(or upload files), set your token in their dashboard, and click start. They handle keeping it
-alive for you. Easiest to begin with; search "Discord bot hosting" and compare.</p>
-<h2>A note on "free" hosts that sleep</h2>
-<p>Some free hosting tiers put your app to sleep when idle, which kills a bot. Bots need to stay
-connected constantly, so pick a host that runs your process continuously (a proper VPS or a
-bot-specific host), not one meant only for websites.</p>
-<h2>Practice</h2>
-<p><strong>Checklist before you deploy:</strong></p>
+<h3>Keep it from going offline</h3>
+<p>Self-hosting has one catch — the bot is offline whenever your PC is <strong>off</strong> or <strong>asleep</strong>.
+To keep it up:</p>
+<ul>
+<li><strong>Stop the PC sleeping:</strong> Windows <strong>Settings → System → Power → Screen and sleep</strong> → set
+  "When plugged in, put my device to sleep" to <strong>Never</strong>.</li>
+<li><strong>Don't close the terminal</strong> or shut down while you want the bot online.</li>
+</ul>
+<h3>Auto-start when your PC boots (Windows, optional)</h3>
+<p>So you don't have to launch it by hand every time:</p>
+<ol>
+<li>Make a file called <code>run_bot.bat</code> in your project folder with these lines:
+   <code>@echo off
+   cd /d "%~dp0"
+   call venv\Scripts\activate
+   python main.py</code></li>
+<li>Press <strong>Win + R</strong>, type <code>shell:startup</code>, press Enter — this opens your Startup folder.</li>
+<li>Right-click <code>run_bot.bat</code> → <strong>Create shortcut</strong>, and move the shortcut into that Startup
+   folder.</li>
+</ol>
+<p>Now the bot launches automatically whenever you log into Windows.</p>
+<blockquote>
+<p><strong>When self-hosting is fine:</strong> while you're learning and testing, or for a small server
+where a little downtime is OK. For a bot lots of people rely on, use a real host (below)
+so it stays up even when your PC is off.</p>
+</blockquote>
+<hr />
+<h2>Option B — Free 24/7 hosting with hollow.host</h2>
+<p><a href="https://hollow.host/">hollow.host</a> is a free Discord-bot host that keeps your bot online
+around the clock on their servers, so it doesn't depend on your PC. Like most free bot
+hosts, it gives you a <strong>web control panel</strong> where you upload your code, set your token, and
+click Start.</p>
+<h3>Steps</h3>
+<ol>
+<li><strong>Sign up</strong> at <a href="https://hollow.host/">hollow.host</a> and create a bot server/instance.
+   Many free hosts have you sign in with Discord and "claim" a free server through their
+   support Discord — check their site/Discord for the exact claim step.</li>
+<li><strong>Choose Python.</strong> When it asks what kind of app you're running, pick the <strong>Python</strong> type
+   (sometimes called an "egg" or image).</li>
+<li><strong>Upload your files.</strong> Use the panel's <strong>File Manager</strong> to upload your project — or, even
+   easier, connect the <strong>GitHub repo</strong> you made last lesson so it pulls your code. Upload
+   everything <em>except</em> your <code>.env</code> and <code>venv</code> folder.</li>
+<li><strong>Set your token safely.</strong> In the panel's <strong>Startup</strong> or <strong>Variables</strong> section, add an
+   environment variable named <code>DISCORD_TOKEN</code> with your token as the value. This replaces
+   the <code>.env</code> file — never upload the <code>.env</code> itself.</li>
+<li><strong>Set the startup command</strong> to run your bot and install requirements. It's usually
+   something like:
+   <code>pip install -r requirements.txt &amp;&amp; python main.py</code>
+   Many panels install <code>requirements.txt</code> automatically — if so, the start command is just
+   <code>python main.py</code>.</li>
+<li><strong>Click Start.</strong> Watch the panel's <strong>Console</strong> — you should see your familiar
+   <code>Logged in as …</code> and <code>Synced N commands</code>. Your bot is now online 24/7. 🎉</li>
+</ol>
+<blockquote>
+<p>The panel labels above (File Manager, Startup, Variables, Console) are the standard ones
+most free bot hosts use, but hollow.host may name them slightly differently. If you get
+stuck, their support Discord (linked on their site) will have the exact steps.</p>
+</blockquote>
+<h3>Reading your token from an environment variable</h3>
+<p>Good news: <strong>your bot already supports this.</strong> <code>main.py</code> uses
+<code>os.getenv("DISCORD_TOKEN")</code>, which reads either your local <code>.env</code> file <em>or</em> an environment
+variable set on the host. So no code changes are needed — set <code>DISCORD_TOKEN</code> in the panel
+and it just works.</p>
+<hr />
+<h2>Advanced — a VPS with auto-restart</h2>
+<p>If you outgrow free hosting, a <strong>VPS</strong> (a small rented Linux server, a few dollars a month)
+gives you full control. Clone your GitHub repo onto it, install requirements, set the token
+as an environment variable, and run it under a <strong>systemd service</strong> with <code>Restart=always</code> so
+it auto-recovers from crashes and reboots. This is how large bots run, but it's optional —
+hollow.host is plenty to start.</p>
+<h2>A note on hosts that "sleep"</h2>
+<p>Some free tiers meant for websites put your app to sleep when it's idle, which kills a bot
+(bots must stay connected constantly). Bot-specific hosts like hollow.host are built to keep
+your process running non-stop — that's exactly what you want.</p>
+<h2>Deploy checklist</h2>
 <ul>
 <li>[ ] <code>requirements.txt</code> lists every library you use.</li>
-<li>[ ] The token is set as an environment variable on the host (not committed to GitHub).</li>
-<li>[ ] <code>Restart=always</code> (or the host's equivalent) is on, so a crash auto-recovers.</li>
-<li>[ ] You tested that the bot reconnects after the host reboots.</li>
+<li>[ ] Your token is set as an environment variable on the host (or <code>.env</code> locally) — <strong>never</strong>
+      uploaded to GitHub.</li>
+<li>[ ] The console shows <code>Logged in as …</code> and <code>Synced N commands</code>.</li>
+<li>[ ] The bot reconnects after the host (or your PC) restarts.</li>
 </ul>
 <h2>Recap</h2>
 <ul>
-<li>A <strong>host</strong> keeps your bot online 24/7; list dependencies in <code>requirements.txt</code>.</li>
-<li>On a <strong>VPS</strong>, use a <strong>systemd service</strong> with <code>Restart=always</code> so it survives crashes and
-  reboots.</li>
-<li>Set the token via an <strong>environment variable</strong>, never in the repo.</li>
-<li>Avoid free tiers that sleep idle apps.</li>
+<li>List your libraries in <strong><code>requirements.txt</code></strong>.</li>
+<li><strong>Self-host</strong> by running <code>python main.py</code> on your PC (stop it sleeping; auto-start with a
+  <code>.bat</code> in the Startup folder) — great for learning.</li>
+<li>For true 24/7, use a free bot host like <strong>hollow.host</strong>: upload your code (or connect
+  GitHub), set <code>DISCORD_TOKEN</code> as an environment variable, set the start command, and hit
+  Start. Your <code>main.py</code> already reads the token from the environment, so no code changes.</li>
 </ul>
 </section>
 <style>
