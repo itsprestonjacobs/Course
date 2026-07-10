@@ -50,6 +50,7 @@ MODULES = [
     ("Messages & Embeds", [
         ("Sending Messages & DMs", "19-messages.md"),
         ("Embeds Deep Dive", "20-embeds.md"),
+        ("Embed Recipes & Custom Embeds", "embed-recipes.md"),
         ("A Branding System", "21-branding.md"),
     ]),
     ("Interactive UI", [
@@ -62,6 +63,7 @@ MODULES = [
         ("Permissions & Role Hierarchy", "26-permissions-roles.md"),
         ("Kick, Ban & Unban", "27-kick-ban.md"),
         ("Timeout, Purge & Warn", "28-timeout-purge-warn.md"),
+        ("More Mod Commands & Adding Your Own", "more-mod-commands.md"),
         ("Welcome & Leave Messages", "29-welcome-leave.md"),
         ("Auto-roles & Reaction Roles", "30-auto-reaction-roles.md"),
         ("Auto-moderation", "31-automod.md"),
@@ -83,6 +85,7 @@ MODULES = [
         ("Calling Web APIs & Webhooks", "41-web-apis.md"),
     ]),
     ("Ship It", [
+        ("Make It Yours: One-File Setup", "make-it-yours.md"),
         ("Git & GitHub for Your Bot", "42-git-github.md"),
         ("Host It 24/7", "43-hosting.md"),
         ("Wrap-up & Next Steps", "44-wrap-up.md"),

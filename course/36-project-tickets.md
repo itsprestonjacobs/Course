@@ -1,42 +1,51 @@
 # Project: Ticket System
 
 Time to put it all together. The ticket system uses almost everything you've learned:
-embeds, dropdowns, permissions, private channels, persistence, and files. It's the same kind
-of support panel the Derpy's Designs server runs. We'll build it in small, testable pieces.
+embeds, dropdowns, **modals**, permissions, private channels, persistence, and files. When
+someone opens a ticket they'll **type a reason**, and staff get a **full info panel** about
+who opened it. It's the same kind of support panel the Derpy's Designs server runs.
 
 ## What we're building
 
-A branded panel with a **dropdown**. When a member picks a category, the bot creates a
-**private channel** only they and staff can see, with a **Close** button that saves a
-**transcript** and deletes the channel — and it all survives a bot restart.
+A branded panel with a **dropdown**. Pick a category → a **pop-up form** asks for details →
+the bot creates a **private channel** (only you + staff) showing an **info panel** about the
+user → a **Close** button saves a **transcript** and deletes it. Opens and closes are
+**logged**, and it all survives a restart.
 
 ## Step 0 — Server prep
 
-In your test server, create:
-- a **role** named `Staff` (it will see tickets),
-- optionally a channel named `ticket-logs` (transcripts land here).
+Create a **Staff** role (sees tickets) and a **ticket-logs** channel (transcripts land
+there).
 
-## Step 1 — The cog + categories
+## Step 1 — Categories live in config
 
-Make `cogs/tickets.py`:
+Your ticket categories come from `config.py` so they're easy to change (see the setup
+lesson). They're a list of `(label, description, emoji)`:
+
+```python
+# config.py
+TICKET_CATEGORIES = [
+    ("Place an Order", "Order a custom design or bot", "🛒"),
+    ("General Support", "Questions, feedback, or help", "💬"),
+    ("Payment / Refund", "Billing, invoices, and refunds", "💳"),
+    ("Claim a Purchase", "Claim a purchased role or ad", "🎟️"),
+    ("Partnership", "Partnerships and collaborations", "🤝"),
+    ("Staff Report", "Report a problem or staff concern", "🛡️"),
+]
+```
+
+**To add a ticket type, just add a row here** — no other code changes needed.
+
+Start `cogs/tickets.py`:
 
 ```python
 import io
-import os
-
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from config import branded_embed, panel, BANNERS
-
-STAFF_ROLE_NAME = os.getenv("STAFF_ROLE_NAME", "Staff")
-
-CATEGORIES = [
-    ("General Support", "Questions or feedback", "💬"),
-    ("Payment / Refund", "Billing help", "💳"),
-    ("Partnership", "Work together", "🤝"),
-]
+from config import (STAFF_ROLE_NAME, TICKET_CATEGORIES, TICKET_LOG_CHANNEL,
+                    BANNERS, branded_embed, panel)
 
 
 class Tickets(commands.Cog):
@@ -48,14 +57,14 @@ async def setup(bot):
     await bot.add_cog(Tickets(bot))
 ```
 
-Add `"cogs.tickets"` to `COGS`.
+## Step 2 — Creating the ticket (with a user-info panel)
 
-## Step 2 — Creating the ticket channel
-
-The heart of the system. Add this function **above** the `Tickets` class:
+The channel's first message tells staff exactly who they're helping — username, mention,
+**user ID**, account age, join date, avatar — plus the reason they typed. Add this function
+above the `Tickets` class:
 
 ```python
-async def create_ticket(interaction: discord.Interaction, category: str):
+async def create_ticket(interaction, category, details):
     guild, author = interaction.guild, interaction.user
 
     existing = discord.utils.get(guild.text_channels, name=f"ticket-{author.id}")
@@ -75,22 +84,77 @@ async def create_ticket(interaction: discord.Interaction, category: str):
 
     channel = await guild.create_text_channel(
         name=f"ticket-{author.id}", overwrites=overwrites,
-        topic=f"{category} ticket for {author}")
+        topic=f"{category} ticket for {author} ({author.id})")
 
-    embed = branded_embed(
-        title=f"{category} ticket",
-        description=f"Hey {author.mention}, a staff member will be with you soon.\n"
-                    "Use the button below when you're done.")
-    await channel.send(content=author.mention, embed=embed, view=CloseTicket())
+    joined = author.joined_at.strftime("%b %d, %Y") if author.joined_at else "Unknown"
+    embed = branded_embed(title=f"🎫 {category}")
+    embed.description = f"Thanks {author.mention}, a staff member will be with you soon."
+    embed.set_thumbnail(url=author.display_avatar.url)
+    embed.add_field(name="User", value=f"{author} ({author.mention})", inline=False)
+    embed.add_field(name="User ID", value=f"`{author.id}`", inline=True)
+    embed.add_field(name="Account created", value=author.created_at.strftime("%b %d, %Y"), inline=True)
+    embed.add_field(name="Joined server", value=joined, inline=True)
+    embed.add_field(name="Details", value=details or "*(none provided)*", inline=False)
+
+    ping = f"{author.mention} {staff_role.mention}" if staff_role else author.mention
+    await channel.send(content=ping, embed=embed, view=CloseTicket(),
+                       allowed_mentions=discord.AllowedMentions(roles=True, users=True))
+
+    log = discord.utils.get(guild.text_channels, name=TICKET_LOG_CHANNEL)
+    if log:
+        await log.send(f"🎫 **{author}** opened a **{category}** ticket → {channel.mention}")
+
     await interaction.response.send_message(f"Your ticket is ready: {channel.mention}", ephemeral=True)
 ```
 
-The key idea is **permission overwrites** — hide the channel from `@everyone`, then add the
-author and Staff back in. One ticket per person is enforced by the `existing` check.
+Everything the user gives us — the `category` and the `details` they typed — goes into that
+info panel. The `User ID` field is there because IDs never change, even if someone changes
+their username.
 
-## Step 3 — The Close button (with transcript)
+## Step 3 — The reason form (a modal)
 
-Add this class above `create_ticket`:
+Instead of opening the ticket instantly, we pop up a **modal** so the user can explain what
+they need. Add these classes above `create_ticket`:
+
+```python
+class TicketModal(discord.ui.Modal, title="Open a Ticket"):
+    def __init__(self, category):
+        super().__init__()
+        self.category = category
+
+    details = discord.ui.TextInput(
+        label="What do you need help with?",
+        placeholder="Add your reason, order details, or question here…",
+        style=discord.TextStyle.paragraph, required=True, max_length=1000)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await create_ticket(interaction, self.category, self.details.value)
+```
+
+## Step 4 — The dropdown opens the form
+
+```python
+class TicketDropdown(discord.ui.Select):
+    def __init__(self):
+        options = [discord.SelectOption(label=l, description=d, emoji=e)
+                   for l, d, e in TICKET_CATEGORIES]
+        super().__init__(placeholder="Select what you need…", options=options,
+                         custom_id="ticket:open")
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_modal(TicketModal(self.values[0]))
+
+
+class TicketPanel(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        self.add_item(TicketDropdown())
+```
+
+Pick a category → the form appears → submitting it creates the ticket. That's the modal from
+the UI module doing real work.
+
+## Step 5 — Close button, transcript & logging
 
 ```python
 class CloseTicket(discord.ui.View):
@@ -109,41 +173,20 @@ class CloseTicket(discord.ui.View):
             lines.append(f"[{stamp}] {message.author}: {message.content}")
         transcript = "\n".join(lines) or "(no messages)"
 
-        log_channel = discord.utils.get(interaction.guild.text_channels, name="ticket-logs")
-        if log_channel:
+        log = discord.utils.get(interaction.guild.text_channels, name=TICKET_LOG_CHANNEL)
+        if log:
             file = discord.File(io.BytesIO(transcript.encode()), filename=f"{channel.name}.txt")
-            await log_channel.send(f"Transcript for `{channel.name}`", file=file)
+            await log.send(f"Transcript for `{channel.name}`", file=file)
 
         await channel.delete()
 ```
 
-We walk every message with `channel.history()`, glue them into one string (remember building
-up a result in a loop?), wrap it in a file, drop it in `#ticket-logs`, then delete the
-channel.
+Every message is saved to a `.txt` **transcript** in `#ticket-logs` before the channel is
+deleted — so you always have a full record, even after the ticket is gone.
 
-## Step 4 — The dropdown + panel View
+## Step 6 — Persistence + the panel command
 
-```python
-class TicketDropdown(discord.ui.Select):
-    def __init__(self):
-        options = [discord.SelectOption(label=l, description=d, emoji=e)
-                   for l, d, e in CATEGORIES]
-        super().__init__(placeholder="Select what you need help with…",
-                         options=options, custom_id="ticket:open")
-
-    async def callback(self, interaction: discord.Interaction):
-        await create_ticket(interaction, self.values[0])
-
-
-class TicketPanel(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=None)
-        self.add_item(TicketDropdown())
-```
-
-## Step 5 — Persistence + the panel command
-
-Add these methods **inside** the `Tickets` class:
+Add these **inside** the `Tickets` class:
 
 ```python
     async def cog_load(self):
@@ -154,34 +197,32 @@ Add these methods **inside** the `Tickets` class:
     @app_commands.checks.has_permissions(manage_guild=True)
     async def ticketpanel(self, interaction: discord.Interaction):
         embeds = panel(title="🎫 | Support",
-                       description="Pick an option below to open a private ticket.",
+                       description="Pick an option below and tell us what you need.",
                        banner=BANNERS.get("assistance"))
         await interaction.channel.send(embeds=embeds, view=TicketPanel())
         await interaction.response.send_message("Panel posted!", ephemeral=True)
 ```
 
-`cog_load` re-registers the Views on startup so old panels never break — that's the
-persistence pattern from the UI module.
-
-## Step 6 — Test the whole flow
+## Step 7 — Test the whole flow
 
 **▶ Run the bot** and:
 1. `/ticketpanel` — the branded panel appears.
-2. Pick a category from the dropdown → a private `ticket-…` channel is created.
-3. Chat a little, then click **Close** → the channel deletes and a transcript lands in
-   `#ticket-logs`.
-4. Restart the bot and use an old panel — it still works. 🎉
+2. Pick a category → **a form pops up** → type a reason → submit.
+3. A private `ticket-…` channel opens with the **user-info panel** and your details, and
+   `#ticket-logs` shows "ticket opened."
+4. Click **Close** → a transcript lands in `#ticket-logs` and the channel deletes.
+5. Restart the bot and use an old panel — still works. 🎉
 
-## Take it further
+## How to customize
 
-- Add a **Claim** button so a staff member can claim a ticket.
-- Store an open-ticket count per user in JSON.
-- Use a **modal** (from the UI module) to ask for order details when the ticket opens.
+- **Add/remove ticket types:** edit `TICKET_CATEGORIES` in `config.py`.
+- **Ask for more info:** add another `TextInput` to `TicketModal` (up to 5).
+- **Add a Claim button:** put another button in `CloseTicket` so staff can claim a ticket.
 
 ## Recap
 
-You built a real, production-style ticket system: dropdown → permission-overwritten private
-channel → transcript → persistent Views. This single project exercises embeds, components,
-permissions, files, and persistence together — the core of nearly every advanced bot.
+You built a production-style ticket system: dropdown → **reason modal** → private channel
+with a **user-info panel** → **transcript** + **logging** → persistent Views. Categories live
+in `config.py`, so anyone can add their own ticket types in one line.
 
 → **Next: Project — Economy & Leveling**

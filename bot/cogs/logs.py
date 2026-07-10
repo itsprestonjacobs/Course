@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 import settings
+from config import LOG_CHANNEL
 
 
 class Logs(commands.Cog):
@@ -9,7 +10,8 @@ class Logs(commands.Cog):
         self.bot = bot
 
     def log_channel(self, guild):
-        name = settings.get(guild.id, "log_channel", "mod-logs")
+        # Per-server override (set with /set_logs), else the config default.
+        name = settings.get(guild.id, "log_channel", LOG_CHANNEL)
         return discord.utils.get(guild.text_channels, name=name)
 
     @commands.Cog.listener()

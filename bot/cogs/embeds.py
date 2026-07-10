@@ -2,12 +2,40 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from config import BRAND_COLOR, STUDIO_NAME, TAGLINE, BANNERS, branded_embed, panel
+from config import BRAND_COLOR, STUDIO_NAME, BANNERS, branded_embed, panel
+
+
+class EmbedBuilder(discord.ui.Modal, title="Create a Custom Embed"):
+    """A pop-up form that lets staff build a custom embed live."""
+
+    e_title = discord.ui.TextInput(label="Title", required=False, max_length=256)
+    e_desc = discord.ui.TextInput(label="Description", style=discord.TextStyle.paragraph,
+                                  required=False, max_length=2000)
+    e_color = discord.ui.TextInput(label="Color hex (e.g. #1e9bff)", required=False, max_length=7)
+    e_image = discord.ui.TextInput(label="Image URL (optional)", required=False)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            color = discord.Color.from_str(self.e_color.value) if self.e_color.value else BRAND_COLOR
+        except ValueError:
+            color = BRAND_COLOR
+        embed = discord.Embed(title=self.e_title.value or None,
+                              description=self.e_desc.value or None, color=color)
+        if self.e_image.value:
+            embed.set_image(url=self.e_image.value)
+        embed.set_footer(text=STUDIO_NAME)
+        await interaction.channel.send(embed=embed)
+        await interaction.response.send_message("Embed posted!", ephemeral=True)
 
 
 class Embeds(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @app_commands.command(description="Build and post a custom embed (staff only).")
+    @app_commands.checks.has_permissions(manage_guild=True)
+    async def embed(self, interaction: discord.Interaction):
+        await interaction.response.send_modal(EmbedBuilder())
 
     @app_commands.command(description="Show info about this server.")
     async def serverinfo(self, interaction: discord.Interaction):

@@ -25,21 +25,25 @@ the lessons comes from these files, so learners can always compare their work ag
 | File | What it covers |
 |------|----------------|
 | `main.py` | Starts the bot, loads every cog, syncs slash commands |
-| `config.py` | Branding: studio name, color, banners, `branded_embed()`, `panel()` |
+| **`config.py`** | **The control panel** — studio name, colors, banners, roles, channels, ticket categories, role menu, banned words, economy rewards. Edit this to make the bot yours. |
 | `data.py` | Tiny JSON load/save helper |
 | `settings.py` | Per-server settings (welcome/log channels) |
 | `economy_db.py` | SQLite layer for the economy system |
 | `cogs/general.py` | `/ping`, `/help` |
-| `cogs/embeds.py` | `/serverinfo`, `/announce` |
-| `cogs/moderation.py` | `/kick`, `/ban`, `/timeout`, `/purge` |
+| `cogs/embeds.py` | `/serverinfo`, `/announce`, `/embed` (custom embed builder) |
+| `cogs/moderation.py` | `/kick`, `/ban`, `/unban`, `/timeout`, `/untimeout`, `/purge`, `/slowmode`, `/lock`, `/unlock`, `/nick`, `/role` — all logged to `#mod-logs` |
 | `cogs/warnings.py` | `/warn`, `/warnings`, `/clearwarns` (saved to JSON) |
 | `cogs/welcome.py` | Welcome & leave messages + auto "Member" role |
 | `cogs/roles.py` | `/rolemenu` — button self-roles |
 | `cogs/automod.py` | Word filter, invite blocking, anti-spam |
 | `cogs/logs.py` | Mod-log for deletes, edits, joins, leaves |
 | `cogs/economy.py` | `/balance`, `/daily`, `/pay`, `/leaderboard`, XP & levels |
-| `cogs/tickets.py` | `/ticketpanel` — dropdown tickets with transcripts |
+| `cogs/tickets.py` | `/ticketpanel` — dropdown → reason **modal** → private channel with a **user-info panel** → transcript + logging |
 | `cogs/botsettings.py` | `/set_welcome`, `/set_logs` |
+
+> **Customizing:** almost everything (names, colors, roles, channels, ticket categories,
+> role menu, banned words, rewards) lives in `config.py`. Edit it there — the cogs read from
+> it, so you rarely touch them.
 
 ## Server setup
 

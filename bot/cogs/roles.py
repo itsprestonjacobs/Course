@@ -2,12 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-# (button label, emoji, role name) — edit to match your server's roles.
-ROLE_BUTTONS = [
-    ("Announcements", "📢", "Announcements"),
-    ("Events", "🎉", "Events"),
-    ("Updates", "🔔", "Updates"),
-]
+from config import ROLE_BUTTONS   # edit the list in config.py to change these
 
 
 class RoleButton(discord.ui.Button):

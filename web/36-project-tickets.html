@@ -1,34 +1,40 @@
 <section class="ddc">
 <h1>Project: Ticket System</h1>
 <p>Time to put it all together. The ticket system uses almost everything you've learned:
-embeds, dropdowns, permissions, private channels, persistence, and files. It's the same kind
-of support panel the Derpy's Designs server runs. We'll build it in small, testable pieces.</p>
+embeds, dropdowns, <strong>modals</strong>, permissions, private channels, persistence, and files. When
+someone opens a ticket they'll <strong>type a reason</strong>, and staff get a <strong>full info panel</strong> about
+who opened it. It's the same kind of support panel the Derpy's Designs server runs.</p>
 <h2>What we're building</h2>
-<p>A branded panel with a <strong>dropdown</strong>. When a member picks a category, the bot creates a
-<strong>private channel</strong> only they and staff can see, with a <strong>Close</strong> button that saves a
-<strong>transcript</strong> and deletes the channel — and it all survives a bot restart.</p>
+<p>A branded panel with a <strong>dropdown</strong>. Pick a category → a <strong>pop-up form</strong> asks for details →
+the bot creates a <strong>private channel</strong> (only you + staff) showing an <strong>info panel</strong> about the
+user → a <strong>Close</strong> button saves a <strong>transcript</strong> and deletes it. Opens and closes are
+<strong>logged</strong>, and it all survives a restart.</p>
 <h2>Step 0 — Server prep</h2>
-<p>In your test server, create:
-- a <strong>role</strong> named <code>Staff</code> (it will see tickets),
-- optionally a channel named <code>ticket-logs</code> (transcripts land here).</p>
-<h2>Step 1 — The cog + categories</h2>
-<p>Make <code>cogs/tickets.py</code>:</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<p>Create a <strong>Staff</strong> role (sees tickets) and a <strong>ticket-logs</strong> channel (transcripts land
+there).</p>
+<h2>Step 1 — Categories live in config</h2>
+<p>Your ticket categories come from <code>config.py</code> so they're easy to change (see the setup
+lesson). They're a list of <code>(label, description, emoji)</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># config.py</span>
+<span class="n">TICKET_CATEGORIES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;Place an Order&quot;</span><span class="p">,</span> <span class="s2">&quot;Order a custom design or bot&quot;</span><span class="p">,</span> <span class="s2">&quot;🛒&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;General Support&quot;</span><span class="p">,</span> <span class="s2">&quot;Questions, feedback, or help&quot;</span><span class="p">,</span> <span class="s2">&quot;💬&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Payment / Refund&quot;</span><span class="p">,</span> <span class="s2">&quot;Billing, invoices, and refunds&quot;</span><span class="p">,</span> <span class="s2">&quot;💳&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Claim a Purchase&quot;</span><span class="p">,</span> <span class="s2">&quot;Claim a purchased role or ad&quot;</span><span class="p">,</span> <span class="s2">&quot;🎟️&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Partnership&quot;</span><span class="p">,</span> <span class="s2">&quot;Partnerships and collaborations&quot;</span><span class="p">,</span> <span class="s2">&quot;🤝&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Staff Report&quot;</span><span class="p">,</span> <span class="s2">&quot;Report a problem or staff concern&quot;</span><span class="p">,</span> <span class="s2">&quot;🛡️&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+</code></pre></div>
 
+<p><strong>To add a ticket type, just add a row here</strong> — no other code changes needed.</p>
+<p>Start <code>cogs/tickets.py</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">discord</span><span class="w"> </span><span class="kn">import</span> <span class="n">app_commands</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">discord.ext</span><span class="w"> </span><span class="kn">import</span> <span class="n">commands</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">config</span><span class="w"> </span><span class="kn">import</span> <span class="n">branded_embed</span><span class="p">,</span> <span class="n">panel</span><span class="p">,</span> <span class="n">BANNERS</span>
-
-<span class="n">STAFF_ROLE_NAME</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;STAFF_ROLE_NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;Staff&quot;</span><span class="p">)</span>
-
-<span class="n">CATEGORIES</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s2">&quot;General Support&quot;</span><span class="p">,</span> <span class="s2">&quot;Questions or feedback&quot;</span><span class="p">,</span> <span class="s2">&quot;💬&quot;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;Payment / Refund&quot;</span><span class="p">,</span> <span class="s2">&quot;Billing help&quot;</span><span class="p">,</span> <span class="s2">&quot;💳&quot;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;Partnership&quot;</span><span class="p">,</span> <span class="s2">&quot;Work together&quot;</span><span class="p">,</span> <span class="s2">&quot;🤝&quot;</span><span class="p">),</span>
-<span class="p">]</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">STAFF_ROLE_NAME</span><span class="p">,</span> <span class="n">TICKET_CATEGORIES</span><span class="p">,</span> <span class="n">TICKET_LOG_CHANNEL</span><span class="p">,</span>
+                    <span class="n">BANNERS</span><span class="p">,</span> <span class="n">branded_embed</span><span class="p">,</span> <span class="n">panel</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Tickets</span><span class="p">(</span><span class="n">commands</span><span class="o">.</span><span class="n">Cog</span><span class="p">):</span>
@@ -40,10 +46,11 @@ of support panel the Derpy's Designs server runs. We'll build it in small, testa
     <span class="k">await</span> <span class="n">bot</span><span class="o">.</span><span class="n">add_cog</span><span class="p">(</span><span class="n">Tickets</span><span class="p">(</span><span class="n">bot</span><span class="p">))</span>
 </code></pre></div>
 
-<p>Add <code>"cogs.tickets"</code> to <code>COGS</code>.</p>
-<h2>Step 2 — Creating the ticket channel</h2>
-<p>The heart of the system. Add this function <strong>above</strong> the <code>Tickets</code> class:</p>
-<div class="codehilite"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_ticket</span><span class="p">(</span><span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<h2>Step 2 — Creating the ticket (with a user-info panel)</h2>
+<p>The channel's first message tells staff exactly who they're helping — username, mention,
+<strong>user ID</strong>, account age, join date, avatar — plus the reason they typed. Add this function
+above the <code>Tickets</code> class:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_ticket</span><span class="p">(</span><span class="n">interaction</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">details</span><span class="p">):</span>
     <span class="n">guild</span><span class="p">,</span> <span class="n">author</span> <span class="o">=</span> <span class="n">interaction</span><span class="o">.</span><span class="n">guild</span><span class="p">,</span> <span class="n">interaction</span><span class="o">.</span><span class="n">user</span>
 
     <span class="n">existing</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">guild</span><span class="o">.</span><span class="n">text_channels</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;ticket-</span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -63,20 +70,70 @@ of support panel the Derpy's Designs server runs. We'll build it in small, testa
 
     <span class="n">channel</span> <span class="o">=</span> <span class="k">await</span> <span class="n">guild</span><span class="o">.</span><span class="n">create_text_channel</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;ticket-</span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">overwrites</span><span class="o">=</span><span class="n">overwrites</span><span class="p">,</span>
-        <span class="n">topic</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2"> ticket for </span><span class="si">{</span><span class="n">author</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">topic</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2"> ticket for </span><span class="si">{</span><span class="n">author</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 
-    <span class="n">embed</span> <span class="o">=</span> <span class="n">branded_embed</span><span class="p">(</span>
-        <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2"> ticket&quot;</span><span class="p">,</span>
-        <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Hey </span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">, a staff member will be with you soon.</span><span class="se">\n</span><span class="s2">&quot;</span>
-                    <span class="s2">&quot;Use the button below when you&#39;re done.&quot;</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">author</span><span class="o">.</span><span class="n">mention</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="n">embed</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="n">CloseTicket</span><span class="p">())</span>
+    <span class="n">joined</span> <span class="o">=</span> <span class="n">author</span><span class="o">.</span><span class="n">joined_at</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%b </span><span class="si">%d</span><span class="s2">, %Y&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">author</span><span class="o">.</span><span class="n">joined_at</span> <span class="k">else</span> <span class="s2">&quot;Unknown&quot;</span>
+    <span class="n">embed</span> <span class="o">=</span> <span class="n">branded_embed</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;🎫 </span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">embed</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Thanks </span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">, a staff member will be with you soon.&quot;</span>
+    <span class="n">embed</span><span class="o">.</span><span class="n">set_thumbnail</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">author</span><span class="o">.</span><span class="n">display_avatar</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;User&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">author</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;User ID&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;`</span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">`&quot;</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Account created&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">author</span><span class="o">.</span><span class="n">created_at</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%b </span><span class="si">%d</span><span class="s2">, %Y&quot;</span><span class="p">),</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Joined server&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">joined</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Details&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">details</span> <span class="ow">or</span> <span class="s2">&quot;*(none provided)*&quot;</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">ping</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">author</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">staff_role</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">staff_role</span> <span class="k">else</span> <span class="n">author</span><span class="o">.</span><span class="n">mention</span>
+    <span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">ping</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="n">embed</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="n">CloseTicket</span><span class="p">(),</span>
+                       <span class="n">allowed_mentions</span><span class="o">=</span><span class="n">discord</span><span class="o">.</span><span class="n">AllowedMentions</span><span class="p">(</span><span class="n">roles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">users</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+    <span class="n">log</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">guild</span><span class="o">.</span><span class="n">text_channels</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">TICKET_LOG_CHANNEL</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">log</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🎫 **</span><span class="si">{</span><span class="n">author</span><span class="si">}</span><span class="s2">** opened a **</span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2">** ticket → </span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
     <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Your ticket is ready: </span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">mention</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
-<p>The key idea is <strong>permission overwrites</strong> — hide the channel from <code>@everyone</code>, then add the
-author and Staff back in. One ticket per person is enforced by the <code>existing</code> check.</p>
-<h2>Step 3 — The Close button (with transcript)</h2>
-<p>Add this class above <code>create_ticket</code>:</p>
+<p>Everything the user gives us — the <code>category</code> and the <code>details</code> they typed — goes into that
+info panel. The <code>User ID</code> field is there because IDs never change, even if someone changes
+their username.</p>
+<h2>Step 3 — The reason form (a modal)</h2>
+<p>Instead of opening the ticket instantly, we pop up a <strong>modal</strong> so the user can explain what
+they need. Add these classes above <code>create_ticket</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TicketModal</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">Modal</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Open a Ticket&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">category</span>
+
+    <span class="n">details</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;What do you need help with?&quot;</span><span class="p">,</span>
+        <span class="n">placeholder</span><span class="o">=</span><span class="s2">&quot;Add your reason, order details, or question here…&quot;</span><span class="p">,</span>
+        <span class="n">style</span><span class="o">=</span><span class="n">discord</span><span class="o">.</span><span class="n">TextStyle</span><span class="o">.</span><span class="n">paragraph</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_submit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">create_ticket</span><span class="p">(</span><span class="n">interaction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">category</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+</code></pre></div>
+
+<h2>Step 4 — The dropdown opens the form</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TicketDropdown</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">Select</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="p">[</span><span class="n">discord</span><span class="o">.</span><span class="n">SelectOption</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">l</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">emoji</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">TICKET_CATEGORIES</span><span class="p">]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">placeholder</span><span class="o">=</span><span class="s2">&quot;Select what you need…&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+                         <span class="n">custom_id</span><span class="o">=</span><span class="s2">&quot;ticket:open&quot;</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_modal</span><span class="p">(</span><span class="n">TicketModal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TicketPanel</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_item</span><span class="p">(</span><span class="n">TicketDropdown</span><span class="p">())</span>
+</code></pre></div>
+
+<p>Pick a category → the form appears → submitting it creates the ticket. That's the modal from
+the UI module doing real work.</p>
+<h2>Step 5 — Close button, transcript &amp; logging</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CloseTicket</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -93,37 +150,18 @@ author and Staff back in. One ticket per person is enforced by the <code>existin
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">stamp</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">author</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">transcript</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;(no messages)&quot;</span>
 
-        <span class="n">log_channel</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">interaction</span><span class="o">.</span><span class="n">guild</span><span class="o">.</span><span class="n">text_channels</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ticket-logs&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">log_channel</span><span class="p">:</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">interaction</span><span class="o">.</span><span class="n">guild</span><span class="o">.</span><span class="n">text_channels</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">TICKET_LOG_CHANNEL</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
             <span class="n">file</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">transcript</span><span class="o">.</span><span class="n">encode</span><span class="p">()),</span> <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.txt&quot;</span><span class="p">)</span>
-            <span class="k">await</span> <span class="n">log_channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transcript for `</span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">`&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">log</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transcript for `</span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">`&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">)</span>
 
         <span class="k">await</span> <span class="n">channel</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
 </code></pre></div>
 
-<p>We walk every message with <code>channel.history()</code>, glue them into one string (remember building
-up a result in a loop?), wrap it in a file, drop it in <code>#ticket-logs</code>, then delete the
-channel.</p>
-<h2>Step 4 — The dropdown + panel View</h2>
-<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TicketDropdown</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">Select</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">options</span> <span class="o">=</span> <span class="p">[</span><span class="n">discord</span><span class="o">.</span><span class="n">SelectOption</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">l</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">emoji</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
-                   <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">CATEGORIES</span><span class="p">]</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">placeholder</span><span class="o">=</span><span class="s2">&quot;Select what you need help with…&quot;</span><span class="p">,</span>
-                         <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span> <span class="n">custom_id</span><span class="o">=</span><span class="s2">&quot;ticket:open&quot;</span><span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
-        <span class="k">await</span> <span class="n">create_ticket</span><span class="p">(</span><span class="n">interaction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-
-<span class="k">class</span><span class="w"> </span><span class="nc">TicketPanel</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_item</span><span class="p">(</span><span class="n">TicketDropdown</span><span class="p">())</span>
-</code></pre></div>
-
-<h2>Step 5 — Persistence + the panel command</h2>
-<p>Add these methods <strong>inside</strong> the <code>Tickets</code> class:</p>
+<p>Every message is saved to a <code>.txt</code> <strong>transcript</strong> in <code>#ticket-logs</code> before the channel is
+deleted — so you always have a full record, even after the ticket is gone.</p>
+<h2>Step 6 — Persistence + the panel command</h2>
+<p>Add these <strong>inside</strong> the <code>Tickets</code> class:</p>
 <div class="codehilite"><pre><span></span><code>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">cog_load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bot</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">TicketPanel</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bot</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">CloseTicket</span><span class="p">())</span>
@@ -132,31 +170,30 @@ channel.</p>
     <span class="nd">@app_commands</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">has_permissions</span><span class="p">(</span><span class="n">manage_guild</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ticketpanel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
         <span class="n">embeds</span> <span class="o">=</span> <span class="n">panel</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;🎫 | Support&quot;</span><span class="p">,</span>
-                       <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Pick an option below to open a private ticket.&quot;</span><span class="p">,</span>
+                       <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Pick an option below and tell us what you need.&quot;</span><span class="p">,</span>
                        <span class="n">banner</span><span class="o">=</span><span class="n">BANNERS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;assistance&quot;</span><span class="p">))</span>
         <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">embeds</span><span class="o">=</span><span class="n">embeds</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="n">TicketPanel</span><span class="p">())</span>
         <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="s2">&quot;Panel posted!&quot;</span><span class="p">,</span> <span class="n">ephemeral</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
-<p><code>cog_load</code> re-registers the Views on startup so old panels never break — that's the
-persistence pattern from the UI module.</p>
-<h2>Step 6 — Test the whole flow</h2>
+<h2>Step 7 — Test the whole flow</h2>
 <p><strong>▶ Run the bot</strong> and:
 1. <code>/ticketpanel</code> — the branded panel appears.
-2. Pick a category from the dropdown → a private <code>ticket-…</code> channel is created.
-3. Chat a little, then click <strong>Close</strong> → the channel deletes and a transcript lands in
-   <code>#ticket-logs</code>.
-4. Restart the bot and use an old panel — it still works. 🎉</p>
-<h2>Take it further</h2>
+2. Pick a category → <strong>a form pops up</strong> → type a reason → submit.
+3. A private <code>ticket-…</code> channel opens with the <strong>user-info panel</strong> and your details, and
+   <code>#ticket-logs</code> shows "ticket opened."
+4. Click <strong>Close</strong> → a transcript lands in <code>#ticket-logs</code> and the channel deletes.
+5. Restart the bot and use an old panel — still works. 🎉</p>
+<h2>How to customize</h2>
 <ul>
-<li>Add a <strong>Claim</strong> button so a staff member can claim a ticket.</li>
-<li>Store an open-ticket count per user in JSON.</li>
-<li>Use a <strong>modal</strong> (from the UI module) to ask for order details when the ticket opens.</li>
+<li><strong>Add/remove ticket types:</strong> edit <code>TICKET_CATEGORIES</code> in <code>config.py</code>.</li>
+<li><strong>Ask for more info:</strong> add another <code>TextInput</code> to <code>TicketModal</code> (up to 5).</li>
+<li><strong>Add a Claim button:</strong> put another button in <code>CloseTicket</code> so staff can claim a ticket.</li>
 </ul>
 <h2>Recap</h2>
-<p>You built a real, production-style ticket system: dropdown → permission-overwritten private
-channel → transcript → persistent Views. This single project exercises embeds, components,
-permissions, files, and persistence together — the core of nearly every advanced bot.</p>
+<p>You built a production-style ticket system: dropdown → <strong>reason modal</strong> → private channel
+with a <strong>user-info panel</strong> → <strong>transcript</strong> + <strong>logging</strong> → persistent Views. Categories live
+in <code>config.py</code>, so anyone can add their own ticket types in one line.</p>
 </section>
 <style>
 .ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}

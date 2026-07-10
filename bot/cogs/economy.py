@@ -6,6 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import economy_db as db
+from config import COINS_PER_MESSAGE, XP_PER_MESSAGE, DAILY_REWARD
 
 
 def xp_for_level(level):
@@ -27,7 +28,7 @@ class Economy(commands.Cog):
             return              # earned XP in the last minute — skip
         self.last_xp[message.author.id] = now
 
-        db.add(message.author.id, coins=1, xp=5)
+        db.add(message.author.id, coins=COINS_PER_MESSAGE, xp=XP_PER_MESSAGE)
         stats = db.get(message.author.id)
         if stats["xp"] >= xp_for_level(stats["level"]):
             new_level = stats["level"] + 1
@@ -53,9 +54,9 @@ class Economy(commands.Cog):
             await interaction.response.send_message(
                 "You already claimed your daily today. Come back tomorrow!", ephemeral=True)
             return
-        db.add(interaction.user.id, coins=100)
+        db.add(interaction.user.id, coins=DAILY_REWARD)
         db.set_daily(interaction.user.id, today)
-        await interaction.response.send_message("💰 You claimed **100** daily coins!")
+        await interaction.response.send_message(f"💰 You claimed **{DAILY_REWARD}** daily coins!")
 
     @app_commands.command(description="Give coins to another member.")
     @app_commands.describe(member="Who to pay", amount="How much")
