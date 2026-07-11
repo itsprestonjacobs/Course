@@ -13,7 +13,7 @@ anything important.
 
 1. Go to **discord.com/developers/applications** and log in.
 2. Click **New Application** (top right).
-3. Name it (e.g. "Derpy Bot"), agree to the terms, and click **Create**.
+3. Name it (e.g. "My Bot"), agree to the terms, and click **Create**.
 
 This "application" is the container that will hold your bot.
 

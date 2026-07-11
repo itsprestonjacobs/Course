@@ -34,12 +34,12 @@ braces:
 
 ```python
 user = {
-    "name": "Derpy",
+    "name": "Robin",
     "level": 5,
     "coins": 200,
 }
 
-print(user["name"])    # Derpy
+print(user["name"])    # Robin
 print(user["level"])   # 5
 ```
 

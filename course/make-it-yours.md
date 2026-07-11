@@ -13,9 +13,9 @@ import os
 import discord
 
 # ---- Branding ----
-STUDIO_NAME = "Derpy's Designs"
-TAGLINE = "Where Creativity Meets Precision"
-BRAND_COLOR = discord.Color.from_str("#1e9bff")
+STUDIO_NAME = "My Bot"
+TAGLINE = "Made with discord.py"
+BRAND_COLOR = discord.Color.from_str("#5865f2")
 
 BANNERS = {"welcome": None, "assistance": None, "market": None}   # paste image links
 DIVIDER_IMAGE = None
@@ -38,12 +38,11 @@ ROLE_BUTTONS = [
 
 # ---- Ticket categories: (label, description, emoji) ----
 TICKET_CATEGORIES = [
-    ("Place an Order", "Order a custom design or bot", "🛒"),
     ("General Support", "Questions, feedback, or help", "💬"),
-    ("Payment / Refund", "Billing, invoices, and refunds", "💳"),
-    ("Claim a Purchase", "Claim a purchased role or ad", "🎟️"),
+    ("Report a Problem", "Report a user or an issue", "🚩"),
+    ("Billing / Payment", "Payment or purchase help", "💳"),
     ("Partnership", "Partnerships and collaborations", "🤝"),
-    ("Staff Report", "Report a problem or staff concern", "🛡️"),
+    ("Other", "Anything else", "❓"),
 ]
 
 # ---- Auto-moderation ----

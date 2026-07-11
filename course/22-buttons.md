@@ -88,7 +88,7 @@ class Links(discord.ui.View):
         self.add_item(discord.ui.Button(label="Our Website", url="https://example.com"))
 ```
 
-The Pricing / ToS buttons on the Derpy's Designs panels are exactly this.
+The "Website" or "Rules" link buttons you see on server panels are exactly this.
 
 ## Practice
 

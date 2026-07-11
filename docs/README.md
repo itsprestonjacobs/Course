@@ -25,7 +25,7 @@ updates automatically.
 ## Rebranding
 
 The accent color, studio name, and logo letter are set in `tools/build.py`
-(`TOKENS_LIGHT` / `TOKENS_DARK` for colors, the `Derpy's Designs` text, and the `D` logo).
+(`TOKENS_LIGHT` / `TOKENS_DARK` for colors, and the course-name/logo text).
 Change them, run `python tools/build.py`, and push. To edit lesson **content**, edit the
 markdown in `course/` and rerun the build — this file is regenerated from it.
 

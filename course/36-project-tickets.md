@@ -3,7 +3,7 @@
 Time to put it all together. The ticket system uses almost everything you've learned:
 embeds, dropdowns, **modals**, permissions, private channels, persistence, and files. When
 someone opens a ticket they'll **type a reason**, and staff get a **full info panel** about
-who opened it. It's the same kind of support panel the Derpy's Designs server runs.
+who opened it. It's the same kind of support panel popular community servers use.
 
 ## What we're building
 
@@ -25,12 +25,11 @@ lesson). They're a list of `(label, description, emoji)`:
 ```python
 # config.py
 TICKET_CATEGORIES = [
-    ("Place an Order", "Order a custom design or bot", "🛒"),
     ("General Support", "Questions, feedback, or help", "💬"),
-    ("Payment / Refund", "Billing, invoices, and refunds", "💳"),
-    ("Claim a Purchase", "Claim a purchased role or ad", "🎟️"),
+    ("Report a Problem", "Report a user or an issue", "🚩"),
+    ("Billing / Payment", "Payment or purchase help", "💳"),
     ("Partnership", "Partnerships and collaborations", "🤝"),
-    ("Staff Report", "Report a problem or staff concern", "🛡️"),
+    ("Other", "Anything else", "❓"),
 ]
 ```
 

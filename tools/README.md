@@ -27,6 +27,6 @@ That regenerates:
 
 - **Lesson text/code:** edit the matching file in `course/` and rerun the build.
 - **Brand color / studio name:** change the `TOKENS_LIGHT` / `TOKENS_DARK` values (accent)
-  and the `Derpy's Designs` text in `build.py`, then rerun.
+  and the bot-name text in `build.py`, then rerun.
 - **Add a lesson:** add the markdown file to `course/`, add one row to the `LESSONS` list
   in `build.py`, and rerun.

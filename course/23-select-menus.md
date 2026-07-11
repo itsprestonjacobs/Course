@@ -1,8 +1,8 @@
 # Select Menus (Dropdowns)
 
-A **select menu** is a dropdown — like "Select the order you want to open" or "Explore our
-courses" in the Derpy's Designs server. It's perfect when you have several options and
-buttons would be too many. This is the component our ticket system uses.
+A **select menu** is a dropdown — like the "Pick a category" menus on support panels. It's
+perfect when you have several options and buttons would be too many. This is the component
+our ticket system uses.
 
 ## The idea
 

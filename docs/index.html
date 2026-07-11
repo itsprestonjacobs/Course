@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Derpy's Designs — Discord Bot Course</title>
+<title>Discord Bot Course — Python &amp; discord.py</title>
 <meta name="description" content="Build a Python Discord bot from scratch — embeds, moderation, and a ticket system.">
 
 <style>
-:root{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;}
-@media (prefers-color-scheme:dark){:root{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#1e9bff;--accent-weak:rgba(30,155,255,.13);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}}
-:root[data-theme="dark"]{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#1e9bff;--accent-weak:rgba(30,155,255,.13);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}
-:root[data-theme="light"]{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;}
+:root{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#4752c4;--accent-weak:#ecedfb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;}
+@media (prefers-color-scheme:dark){:root{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#5865f2;--accent-weak:rgba(88,101,242,.16);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}}
+:root[data-theme="dark"]{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#5865f2;--accent-weak:rgba(88,101,242,.16);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}
+:root[data-theme="light"]{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#4752c4;--accent-weak:#ecedfb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;}
 *{box-sizing:border-box;}html{scroll-behavior:smooth;}
 body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.65;}
 a{color:var(--accent);}
@@ -163,7 +163,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 
 </head>
 <body>
-<header class="topbar"><div class="brand"><div class="logo">D</div><div>Derpy's Designs<small>Discord Bot Course</small></div></div><div class="spacer"></div><button class="theme-btn" type="button" aria-label="Toggle light or dark theme">&#9790;</button></header><div class="wrap"><aside class="sidebar"><div class="side-label">Lessons</div><div class="side-group">Foundations</div>
+<header class="topbar"><div class="brand"><div class="logo">&gt;_</div><div>Discord Bot Course<small>Python &middot; discord.py</small></div></div><div class="spacer"></div><button class="theme-btn" type="button" aria-label="Toggle light or dark theme">&#9790;</button></header><div class="wrap"><aside class="sidebar"><div class="side-label">Lessons</div><div class="side-group">Foundations</div>
 <a class="nav-link" href="#l1" data-target="l1"><span class="nav-num">01</span><span class="nav-title">How Discord Bots Work</span><span class="nav-check">✓</span></a>
 <a class="nav-link" href="#l2" data-target="l2"><span class="nav-num">02</span><span class="nav-title">Install Your Tools</span><span class="nav-check">✓</span></a>
 <a class="nav-link" href="#l3" data-target="l3"><span class="nav-num">03</span><span class="nav-title">Python: Variables & Types</span><span class="nav-check">✓</span></a>
@@ -384,13 +384,13 @@ run each snippet with <code>python practice.py</code>. Typing the examples yours
 
 <h2>Variables — labeled boxes</h2>
 <p>A <strong>variable</strong> stores a value under a name so you can use it later:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Derpy&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Robin&quot;</span>
 <span class="n">age</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">age</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Read <code>=</code> as "gets set to." <code>name</code> gets set to <code>"Derpy"</code>.</p>
+<p>Read <code>=</code> as "gets set to." <code>name</code> gets set to <code>"Robin"</code>.</p>
 <h2>The basic types</h2>
 <p>Python values come in a few flavors. The main ones:</p>
 <div class="codehilite"><pre><span></span><code><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;hello&quot;</span>        <span class="c1"># str  — text, always in quotes</span>
@@ -407,19 +407,19 @@ run each snippet with <code>python practice.py</code>. Typing the examples yours
 
 <h2>Working with text (strings)</h2>
 <p>Strings can be joined and measured:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">first</span> <span class="o">=</span> <span class="s2">&quot;Derpy&quot;</span>
-<span class="n">last</span> <span class="o">=</span> <span class="s2">&quot;Designs&quot;</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">first</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">last</span><span class="p">)</span>   <span class="c1"># Derpy Designs</span>
+<div class="codehilite"><pre><span></span><code><span class="n">first</span> <span class="o">=</span> <span class="s2">&quot;Robin&quot;</span>
+<span class="n">last</span> <span class="o">=</span> <span class="s2">&quot;Lee&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">first</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">last</span><span class="p">)</span>   <span class="c1"># Robin Lee</span>
 <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">first</span><span class="p">))</span>           <span class="c1"># 5  (number of characters)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>        <span class="c1"># DERPY</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>        <span class="c1"># derpy</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>        <span class="c1"># ROBIN</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>        <span class="c1"># robin</span>
 </code></pre></div>
 
 <h2>f-strings — the clean way to build text</h2>
 <p>Put an <code>f</code> before the quotes, then drop variables straight in with <code>{ }</code>:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Derpy&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Robin&quot;</span>
 <span class="n">age</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">age</span><span class="si">}</span><span class="s2"> years old&quot;</span><span class="p">)</span>   <span class="c1"># Derpy is 3 years old</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">age</span><span class="si">}</span><span class="s2"> years old&quot;</span><span class="p">)</span>   <span class="c1"># Robin is 3 years old</span>
 </code></pre></div>
 
 <p>f-strings are everywhere in bot code — for example naming a channel <code>f"ticket-{user_id}"</code>.
@@ -498,12 +498,12 @@ members, a mapping of user → score. These two structures show up constantly in
 <p>A <strong>dictionary</strong> stores values under names (keys) instead of positions. Written with curly
 braces:</p>
 <div class="codehilite"><pre><span></span><code><span class="n">user</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Derpy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Robin&quot;</span><span class="p">,</span>
     <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
     <span class="s2">&quot;coins&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
 <span class="p">}</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>    <span class="c1"># Derpy</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>    <span class="c1"># Robin</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">])</span>   <span class="c1"># 5</span>
 </code></pre></div>
 
@@ -1178,7 +1178,7 @@ anything important.</p>
 <ol>
 <li>Go to <strong>discord.com/developers/applications</strong> and log in.</li>
 <li>Click <strong>New Application</strong> (top right).</li>
-<li>Name it (e.g. "Derpy Bot"), agree to the terms, and click <strong>Create</strong>.</li>
+<li>Name it (e.g. "My Bot"), agree to the terms, and click <strong>Create</strong>.</li>
 </ol>
 <p>This "application" is the container that will hold your bot.</p>
 <h2>Step 3 — Turn it into a bot and copy the token</h2>
@@ -1989,8 +1989,8 @@ the Python lessons? This is where it earns its keep.)</p>
 </article>
 <article class="ddc lesson" id="l20" data-idx="19">
 <h1>Embeds Deep Dive</h1>
-<p>Embeds are the clean, colored cards that make a bot look professional — like the Order,
-Assistance, and Market panels in the Derpy's Designs server. This lesson covers every part.</p>
+<p>Embeds are the clean, colored cards that make a bot look professional — like the support and
+info panels you see in well-run Discord servers. This lesson covers every part.</p>
 <h2>Your first embed</h2>
 <div class="codehilite"><pre><span></span><code>    <span class="nd">@app_commands</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Show an example embed.&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">demo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">Interaction</span><span class="p">):</span>
@@ -2011,13 +2011,13 @@ Assistance, and Market panels in the Derpy's Designs server. This lesson covers 
     <span class="n">color</span><span class="o">=</span><span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;#1e9bff&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
-<span class="n">embed</span><span class="o">.</span><span class="n">set_author</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Derpy&#39;s Designs&quot;</span><span class="p">,</span> <span class="n">icon_url</span><span class="o">=</span><span class="s2">&quot;https://.../logo.png&quot;</span><span class="p">)</span>
+<span class="n">embed</span><span class="o">.</span><span class="n">set_author</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;My Bot&quot;</span><span class="p">,</span> <span class="n">icon_url</span><span class="o">=</span><span class="s2">&quot;https://.../logo.png&quot;</span><span class="p">)</span>
 <span class="n">embed</span><span class="o">.</span><span class="n">set_thumbnail</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://.../small.png&quot;</span><span class="p">)</span>     <span class="c1"># small image, top-right</span>
 <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Discord Services&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;🟢 Open&quot;</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Custom Embeds&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;🟢 Open&quot;</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Note&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;Open a ticket to order.&quot;</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">embed</span><span class="o">.</span><span class="n">set_image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://.../banner.png&quot;</span><span class="p">)</span>        <span class="c1"># big image, bottom</span>
-<span class="n">embed</span><span class="o">.</span><span class="n">set_footer</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Where Creativity Meets Precision&quot;</span><span class="p">)</span>
+<span class="n">embed</span><span class="o">.</span><span class="n">set_footer</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Made with discord.py&quot;</span><span class="p">)</span>
 </code></pre></div>
 
 <table>
@@ -2069,8 +2069,8 @@ Assistance, and Market panels in the Derpy's Designs server. This lesson covers 
 language your users learn instantly.</p>
 <h2>Fields and inline layout</h2>
 <p>Fields are the key to nice layouts. <code>inline=True</code> fields flow left-to-right (up to 3 per
-row); <code>inline=False</code> fields take a full row. That's how the "Order Status" list in the
-Derpy's Designs server lines up so neatly.</p>
+row); <code>inline=False</code> fields take a full row. That's how a tidy "status" or "stats" panel
+lines up so neatly.</p>
 <h2>Getting image links</h2>
 <p>Embeds need image <strong>URLs</strong>, not files on your computer. The easy way: upload the image to
 any Discord channel, right-click it → <strong>Copy Link</strong>, and paste that URL.</p>
@@ -2084,7 +2084,7 @@ any Discord channel, right-click it → <strong>Copy Link</strong>, and paste th
         <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Members&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">member_count</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Channels&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">channels</span><span class="p">),</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">embed</span><span class="o">.</span><span class="n">add_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Created&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">created_at</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%b </span><span class="si">%d</span><span class="s2">, %Y&quot;</span><span class="p">),</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">embed</span><span class="o">.</span><span class="n">set_footer</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Derpy&#39;s Designs&quot;</span><span class="p">)</span>
+        <span class="n">embed</span><span class="o">.</span><span class="n">set_footer</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;My Bot&quot;</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">interaction</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">embed</span><span class="o">=</span><span class="n">embed</span><span class="p">)</span>
 </code></pre></div>
 
@@ -2168,7 +2168,7 @@ non-coders on your team can make branded embeds any time.</p>
 </code></pre></div>
 
 <h2>Recipe: an "Order Status" panel</h2>
-<p>The status list from the Derpy's Designs server — colored dots make each service pop:</p>
+<p>A service-status panel — colored dots make each item pop:</p>
 <div class="codehilite"><pre><span></span><code><span class="n">services</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;Discord Services&quot;</span><span class="p">:</span> <span class="s2">&quot;🟢 Open&quot;</span><span class="p">,</span>
     <span class="s2">&quot;Custom Embeds&quot;</span><span class="p">:</span> <span class="s2">&quot;🟢 Open&quot;</span><span class="p">,</span>
@@ -2241,16 +2241,15 @@ allow the mention with <code>allowed_mentions=discord.AllowedMentions(everyone=T
 <h1>A Branding System</h1>
 <p>Copying the same color and footer into every embed is tedious and easy to get wrong. The
 pro move is to put all your branding in <strong>one file</strong> and reuse it everywhere. Change it
-once, and the whole bot updates. This is exactly how the Derpy's Designs panels stay
-consistent.</p>
+once, and the whole bot updates. This is how professional bots keep a consistent look.</p>
 <h2>Step 1 — Make config.py</h2>
 <p>Create <code>config.py</code> next to <code>main.py</code>:</p>
 <div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
 
 <span class="c1"># ---- Change this to rebrand the whole bot ----</span>
-<span class="n">STUDIO_NAME</span> <span class="o">=</span> <span class="s2">&quot;Derpy&#39;s Designs&quot;</span>
-<span class="n">TAGLINE</span> <span class="o">=</span> <span class="s2">&quot;Where Creativity Meets Precision&quot;</span>
-<span class="n">BRAND_COLOR</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;#1e9bff&quot;</span><span class="p">)</span>
+<span class="n">STUDIO_NAME</span> <span class="o">=</span> <span class="s2">&quot;My Bot&quot;</span>
+<span class="n">TAGLINE</span> <span class="o">=</span> <span class="s2">&quot;Made with discord.py&quot;</span>
+<span class="n">BRAND_COLOR</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;#5865f2&quot;</span><span class="p">)</span>
 <span class="c1"># ----------------------------------------------</span>
 
 
@@ -2276,7 +2275,7 @@ your color and footer.</p>
 <p>Every embed you make this way matches automatically. Want a different color later? Change
 the one line in <code>config.py</code>.</p>
 <h2>Step 3 — Panels (the banner-on-top look)</h2>
-<p>The big Derpy's Designs panels have a <strong>banner image on top</strong> and a <strong>divider bar at the
+<p>Big, polished server panels often have a <strong>banner image on top</strong> and a <strong>divider bar at the
 bottom</strong>. But a single embed can only hold <em>one</em> image. The trick: send <strong>two embeds
 together</strong> — Discord stacks them into one seamless card.</p>
 <p>Add this to <code>config.py</code>:</p>
@@ -2413,7 +2412,7 @@ can't be clicked twice.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_item</span><span class="p">(</span><span class="n">discord</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Our Website&quot;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://example.com&quot;</span><span class="p">))</span>
 </code></pre></div>
 
-<p>The Pricing / ToS buttons on the Derpy's Designs panels are exactly this.</p>
+<p>The "Website" or "Rules" link buttons you see on server panels are exactly this.</p>
 <h2>Practice</h2>
 <p><strong>Challenge:</strong> make a <code>/vote</code> command with two buttons, 👍 and 👎, that each reply
 "Thanks for voting!" (ephemeral).</p>
@@ -2445,9 +2444,9 @@ can't be clicked twice.</p>
 </article>
 <article class="ddc lesson" id="l24" data-idx="23">
 <h1>Select Menus (Dropdowns)</h1>
-<p>A <strong>select menu</strong> is a dropdown — like "Select the order you want to open" or "Explore our
-courses" in the Derpy's Designs server. It's perfect when you have several options and
-buttons would be too many. This is the component our ticket system uses.</p>
+<p>A <strong>select menu</strong> is a dropdown — like the "Pick a category" menus on support panels. It's
+perfect when you have several options and buttons would be too many. This is the component
+our ticket system uses.</p>
 <h2>The idea</h2>
 <p>A select menu is a component (like a button) that you add to a View. Each option is a
 <code>SelectOption</code>. When someone picks one, a callback runs with their choice.</p>
@@ -4031,7 +4030,7 @@ your Logs cog's <code>log_channel()</code> helper to read
 <p>Time to put it all together. The ticket system uses almost everything you've learned:
 embeds, dropdowns, <strong>modals</strong>, permissions, private channels, persistence, and files. When
 someone opens a ticket they'll <strong>type a reason</strong>, and staff get a <strong>full info panel</strong> about
-who opened it. It's the same kind of support panel the Derpy's Designs server runs.</p>
+who opened it. It's the same kind of support panel popular community servers use.</p>
 <h2>What we're building</h2>
 <p>A branded panel with a <strong>dropdown</strong>. Pick a category → a <strong>pop-up form</strong> asks for details →
 the bot creates a <strong>private channel</strong> (only you + staff) showing an <strong>info panel</strong> about the
@@ -4045,12 +4044,11 @@ there).</p>
 lesson). They're a list of <code>(label, description, emoji)</code>:</p>
 <div class="codehilite"><pre><span></span><code><span class="c1"># config.py</span>
 <span class="n">TICKET_CATEGORIES</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s2">&quot;Place an Order&quot;</span><span class="p">,</span> <span class="s2">&quot;Order a custom design or bot&quot;</span><span class="p">,</span> <span class="s2">&quot;🛒&quot;</span><span class="p">),</span>
     <span class="p">(</span><span class="s2">&quot;General Support&quot;</span><span class="p">,</span> <span class="s2">&quot;Questions, feedback, or help&quot;</span><span class="p">,</span> <span class="s2">&quot;💬&quot;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;Payment / Refund&quot;</span><span class="p">,</span> <span class="s2">&quot;Billing, invoices, and refunds&quot;</span><span class="p">,</span> <span class="s2">&quot;💳&quot;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;Claim a Purchase&quot;</span><span class="p">,</span> <span class="s2">&quot;Claim a purchased role or ad&quot;</span><span class="p">,</span> <span class="s2">&quot;🎟️&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Report a Problem&quot;</span><span class="p">,</span> <span class="s2">&quot;Report a user or an issue&quot;</span><span class="p">,</span> <span class="s2">&quot;🚩&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Billing / Payment&quot;</span><span class="p">,</span> <span class="s2">&quot;Payment or purchase help&quot;</span><span class="p">,</span> <span class="s2">&quot;💳&quot;</span><span class="p">),</span>
     <span class="p">(</span><span class="s2">&quot;Partnership&quot;</span><span class="p">,</span> <span class="s2">&quot;Partnerships and collaborations&quot;</span><span class="p">,</span> <span class="s2">&quot;🤝&quot;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;Staff Report&quot;</span><span class="p">,</span> <span class="s2">&quot;Report a problem or staff concern&quot;</span><span class="p">,</span> <span class="s2">&quot;🛡️&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Other&quot;</span><span class="p">,</span> <span class="s2">&quot;Anything else&quot;</span><span class="p">,</span> <span class="s2">&quot;❓&quot;</span><span class="p">),</span>
 <span class="p">]</span>
 </code></pre></div>
 
@@ -4860,9 +4858,9 @@ the cogs. Change it here; the whole bot updates.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
 
 <span class="c1"># ---- Branding ----</span>
-<span class="n">STUDIO_NAME</span> <span class="o">=</span> <span class="s2">&quot;Derpy&#39;s Designs&quot;</span>
-<span class="n">TAGLINE</span> <span class="o">=</span> <span class="s2">&quot;Where Creativity Meets Precision&quot;</span>
-<span class="n">BRAND_COLOR</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;#1e9bff&quot;</span><span class="p">)</span>
+<span class="n">STUDIO_NAME</span> <span class="o">=</span> <span class="s2">&quot;My Bot&quot;</span>
+<span class="n">TAGLINE</span> <span class="o">=</span> <span class="s2">&quot;Made with discord.py&quot;</span>
+<span class="n">BRAND_COLOR</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;#5865f2&quot;</span><span class="p">)</span>
 
 <span class="n">BANNERS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;welcome&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;assistance&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;market&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>   <span class="c1"># paste image links</span>
 <span class="n">DIVIDER_IMAGE</span> <span class="o">=</span> <span class="kc">None</span>
@@ -4885,12 +4883,11 @@ the cogs. Change it here; the whole bot updates.</p>
 
 <span class="c1"># ---- Ticket categories: (label, description, emoji) ----</span>
 <span class="n">TICKET_CATEGORIES</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s2">&quot;Place an Order&quot;</span><span class="p">,</span> <span class="s2">&quot;Order a custom design or bot&quot;</span><span class="p">,</span> <span class="s2">&quot;🛒&quot;</span><span class="p">),</span>
     <span class="p">(</span><span class="s2">&quot;General Support&quot;</span><span class="p">,</span> <span class="s2">&quot;Questions, feedback, or help&quot;</span><span class="p">,</span> <span class="s2">&quot;💬&quot;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;Payment / Refund&quot;</span><span class="p">,</span> <span class="s2">&quot;Billing, invoices, and refunds&quot;</span><span class="p">,</span> <span class="s2">&quot;💳&quot;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;Claim a Purchase&quot;</span><span class="p">,</span> <span class="s2">&quot;Claim a purchased role or ad&quot;</span><span class="p">,</span> <span class="s2">&quot;🎟️&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Report a Problem&quot;</span><span class="p">,</span> <span class="s2">&quot;Report a user or an issue&quot;</span><span class="p">,</span> <span class="s2">&quot;🚩&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Billing / Payment&quot;</span><span class="p">,</span> <span class="s2">&quot;Payment or purchase help&quot;</span><span class="p">,</span> <span class="s2">&quot;💳&quot;</span><span class="p">),</span>
     <span class="p">(</span><span class="s2">&quot;Partnership&quot;</span><span class="p">,</span> <span class="s2">&quot;Partnerships and collaborations&quot;</span><span class="p">,</span> <span class="s2">&quot;🤝&quot;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;Staff Report&quot;</span><span class="p">,</span> <span class="s2">&quot;Report a problem or staff concern&quot;</span><span class="p">,</span> <span class="s2">&quot;🛡️&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Other&quot;</span><span class="p">,</span> <span class="s2">&quot;Anything else&quot;</span><span class="p">,</span> <span class="s2">&quot;❓&quot;</span><span class="p">),</span>
 <span class="p">]</span>
 
 <span class="c1"># ---- Auto-moderation ----</span>

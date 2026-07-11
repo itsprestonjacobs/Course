@@ -1,7 +1,7 @@
 # Embeds Deep Dive
 
-Embeds are the clean, colored cards that make a bot look professional — like the Order,
-Assistance, and Market panels in the Derpy's Designs server. This lesson covers every part.
+Embeds are the clean, colored cards that make a bot look professional — like the support and
+info panels you see in well-run Discord servers. This lesson covers every part.
 
 ## Your first embed
 
@@ -29,13 +29,13 @@ embed = discord.Embed(
     color=discord.Color.from_str("#1e9bff"),
 )
 
-embed.set_author(name="Derpy's Designs", icon_url="https://.../logo.png")
+embed.set_author(name="My Bot", icon_url="https://.../logo.png")
 embed.set_thumbnail(url="https://.../small.png")     # small image, top-right
 embed.add_field(name="Discord Services", value="🟢 Open", inline=True)
 embed.add_field(name="Custom Embeds", value="🟢 Open", inline=True)
 embed.add_field(name="Note", value="Open a ticket to order.", inline=False)
 embed.set_image(url="https://.../banner.png")        # big image, bottom
-embed.set_footer(text="Where Creativity Meets Precision")
+embed.set_footer(text="Made with discord.py")
 ```
 
 | Method | What it does |
@@ -63,8 +63,8 @@ language your users learn instantly.
 ## Fields and inline layout
 
 Fields are the key to nice layouts. `inline=True` fields flow left-to-right (up to 3 per
-row); `inline=False` fields take a full row. That's how the "Order Status" list in the
-Derpy's Designs server lines up so neatly.
+row); `inline=False` fields take a full row. That's how a tidy "status" or "stats" panel
+lines up so neatly.
 
 ## Getting image links
 
@@ -83,7 +83,7 @@ any Discord channel, right-click it → **Copy Link**, and paste that URL.
         embed.add_field(name="Members", value=g.member_count, inline=True)
         embed.add_field(name="Channels", value=len(g.channels), inline=True)
         embed.add_field(name="Created", value=g.created_at.strftime("%b %d, %Y"), inline=True)
-        embed.set_footer(text="Derpy's Designs")
+        embed.set_footer(text="My Bot")
         await interaction.response.send_message(embed=embed)
 ```
 

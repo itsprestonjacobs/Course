@@ -1,4 +1,4 @@
-# Derpy's Designs — Reference Bot
+# Reference Bot
 
 This is the **finished bot** students build toward across the course. Every code snippet in
 the lessons comes from these files, so learners can always compare their work against it.

@@ -169,11 +169,11 @@ ENHANCE_JS = r"""
 
 # Token blocks shared by fragments and site.
 TOKENS_LIGHT = ("--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;"
-                "--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;"
+                "--strong:#111318;--border:#e2e4e8;--accent:#4752c4;--accent-weak:#ecedfb;"
                 "--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;"
                 "--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;")
 TOKENS_DARK = ("--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;"
-               "--strong:#f2f3f5;--border:#34373d;--accent:#1e9bff;--accent-weak:rgba(30,155,255,.13);"
+               "--strong:#f2f3f5;--border:#34373d;--accent:#5865f2;--accent-weak:rgba(88,101,242,.16);"
                "--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);"
                "--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;")
 
@@ -288,8 +288,8 @@ SITE_SCRIPT = ("""
 </script>
 """).replace("__ENHANCE__", ENHANCE_JS.strip())
 
-TOPBAR = ('<header class="topbar"><div class="brand"><div class="logo">D</div>'
-          '<div>Derpy\'s Designs<small>Discord Bot Course</small></div></div>'
+TOPBAR = ('<header class="topbar"><div class="brand"><div class="logo">&gt;_</div>'
+          '<div>Discord Bot Course<small>Python &middot; discord.py</small></div></div>'
           '<div class="spacer"></div>'
           '<button class="theme-btn" type="button" aria-label="Toggle light or dark theme">&#9790;</button></header>')
 BODY = (TOPBAR + '<div class="wrap"><aside class="sidebar"><div class="side-label">Lessons</div>'
@@ -300,7 +300,7 @@ BODY = (TOPBAR + '<div class="wrap"><aside class="sidebar"><div class="side-labe
 
 index_html = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
               '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
-              '<title>Derpy\'s Designs — Discord Bot Course</title>\n'
+              '<title>Discord Bot Course — Python &amp; discord.py</title>\n'
               '<meta name="description" content="Build a Python Discord bot from scratch — embeds, moderation, and a ticket system.">\n'
               + SITE_STYLE + '\n</head>\n<body>\n' + BODY + '\n' + SITE_SCRIPT + '\n</body>\n</html>\n')
 with open(os.path.join(SITE, "index.html"), "w", encoding="utf-8") as f:

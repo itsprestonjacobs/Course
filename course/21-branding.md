@@ -2,8 +2,7 @@
 
 Copying the same color and footer into every embed is tedious and easy to get wrong. The
 pro move is to put all your branding in **one file** and reuse it everywhere. Change it
-once, and the whole bot updates. This is exactly how the Derpy's Designs panels stay
-consistent.
+once, and the whole bot updates. This is how professional bots keep a consistent look.
 
 ## Step 1 — Make config.py
 
@@ -13,9 +12,9 @@ Create `config.py` next to `main.py`:
 import discord
 
 # ---- Change this to rebrand the whole bot ----
-STUDIO_NAME = "Derpy's Designs"
-TAGLINE = "Where Creativity Meets Precision"
-BRAND_COLOR = discord.Color.from_str("#1e9bff")
+STUDIO_NAME = "My Bot"
+TAGLINE = "Made with discord.py"
+BRAND_COLOR = discord.Color.from_str("#5865f2")
 # ----------------------------------------------
 
 
@@ -46,7 +45,7 @@ the one line in `config.py`.
 
 ## Step 3 — Panels (the banner-on-top look)
 
-The big Derpy's Designs panels have a **banner image on top** and a **divider bar at the
+Big, polished server panels often have a **banner image on top** and a **divider bar at the
 bottom**. But a single embed can only hold *one* image. The trick: send **two embeds
 together** — Discord stacks them into one seamless card.
 

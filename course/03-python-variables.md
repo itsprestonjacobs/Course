@@ -17,13 +17,13 @@ print("Hello, world!")
 A **variable** stores a value under a name so you can use it later:
 
 ```python
-name = "Derpy"
+name = "Robin"
 age = 3
 print(name)
 print(age)
 ```
 
-Read `=` as "gets set to." `name` gets set to `"Derpy"`.
+Read `=` as "gets set to." `name` gets set to `"Robin"`.
 
 ## The basic types
 
@@ -49,12 +49,12 @@ print(type("hi"))     # <class 'str'>
 Strings can be joined and measured:
 
 ```python
-first = "Derpy"
-last = "Designs"
-print(first + " " + last)   # Derpy Designs
+first = "Robin"
+last = "Lee"
+print(first + " " + last)   # Robin Lee
 print(len(first))           # 5  (number of characters)
-print(first.upper())        # DERPY
-print(first.lower())        # derpy
+print(first.upper())        # ROBIN
+print(first.lower())        # robin
 ```
 
 ## f-strings — the clean way to build text
@@ -62,9 +62,9 @@ print(first.lower())        # derpy
 Put an `f` before the quotes, then drop variables straight in with `{ }`:
 
 ```python
-name = "Derpy"
+name = "Robin"
 age = 3
-print(f"{name} is {age} years old")   # Derpy is 3 years old
+print(f"{name} is {age} years old")   # Robin is 3 years old
 ```
 
 f-strings are everywhere in bot code — for example naming a channel `f"ticket-{user_id}"`.

@@ -10,13 +10,13 @@ run each snippet with <code>python practice.py</code>. Typing the examples yours
 
 <h2>Variables — labeled boxes</h2>
 <p>A <strong>variable</strong> stores a value under a name so you can use it later:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Derpy&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Robin&quot;</span>
 <span class="n">age</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">age</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Read <code>=</code> as "gets set to." <code>name</code> gets set to <code>"Derpy"</code>.</p>
+<p>Read <code>=</code> as "gets set to." <code>name</code> gets set to <code>"Robin"</code>.</p>
 <h2>The basic types</h2>
 <p>Python values come in a few flavors. The main ones:</p>
 <div class="codehilite"><pre><span></span><code><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;hello&quot;</span>        <span class="c1"># str  — text, always in quotes</span>
@@ -33,19 +33,19 @@ run each snippet with <code>python practice.py</code>. Typing the examples yours
 
 <h2>Working with text (strings)</h2>
 <p>Strings can be joined and measured:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">first</span> <span class="o">=</span> <span class="s2">&quot;Derpy&quot;</span>
-<span class="n">last</span> <span class="o">=</span> <span class="s2">&quot;Designs&quot;</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">first</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">last</span><span class="p">)</span>   <span class="c1"># Derpy Designs</span>
+<div class="codehilite"><pre><span></span><code><span class="n">first</span> <span class="o">=</span> <span class="s2">&quot;Robin&quot;</span>
+<span class="n">last</span> <span class="o">=</span> <span class="s2">&quot;Lee&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">first</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">last</span><span class="p">)</span>   <span class="c1"># Robin Lee</span>
 <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">first</span><span class="p">))</span>           <span class="c1"># 5  (number of characters)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>        <span class="c1"># DERPY</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>        <span class="c1"># derpy</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>        <span class="c1"># ROBIN</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>        <span class="c1"># robin</span>
 </code></pre></div>
 
 <h2>f-strings — the clean way to build text</h2>
 <p>Put an <code>f</code> before the quotes, then drop variables straight in with <code>{ }</code>:</p>
-<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Derpy&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Robin&quot;</span>
 <span class="n">age</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">age</span><span class="si">}</span><span class="s2"> years old&quot;</span><span class="p">)</span>   <span class="c1"># Derpy is 3 years old</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">age</span><span class="si">}</span><span class="s2"> years old&quot;</span><span class="p">)</span>   <span class="c1"># Robin is 3 years old</span>
 </code></pre></div>
 
 <p>f-strings are everywhere in bot code — for example naming a channel <code>f"ticket-{user_id}"</code>.
@@ -99,9 +99,9 @@ Get comfortable with them now.</p>
 </ul>
 </section>
 <style>
-.ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}
+.ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#4752c4;--accent-weak:#ecedfb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}
 .ddc *{box-sizing:border-box;}
-@media (prefers-color-scheme:dark){.ddc{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#1e9bff;--accent-weak:rgba(30,155,255,.13);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}}
+@media (prefers-color-scheme:dark){.ddc{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#5865f2;--accent-weak:rgba(88,101,242,.16);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}}
 
 .ddc h1{font-size:1.95rem;line-height:1.2;margin:.1em 0 .15em;letter-spacing:-.01em;color:var(--strong);font-weight:800;}
 .ddc h2{font-size:1.35rem;margin:1.9em 0 .5em;padding-top:1em;border-top:1px solid var(--border);color:var(--strong);font-weight:700;}

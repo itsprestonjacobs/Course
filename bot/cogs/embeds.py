@@ -41,7 +41,7 @@ class Embeds(commands.Cog):
     async def serverinfo(self, interaction: discord.Interaction):
         g = interaction.guild
 
-        embed = branded_embed(title=g.name, description=g.description or f"A {STUDIO_NAME} community.")
+        embed = branded_embed(title=g.name, description=g.description or "Server information")
         if g.icon:
             embed.set_thumbnail(url=g.icon.url)
 

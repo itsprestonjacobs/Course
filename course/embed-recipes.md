@@ -58,7 +58,7 @@ embed.set_footer(text="Breaking the rules may result in a warning, mute, or ban.
 
 ## Recipe: an "Order Status" panel
 
-The status list from the Derpy's Designs server — colored dots make each service pop:
+A service-status panel — colored dots make each item pop:
 
 ```python
 services = {

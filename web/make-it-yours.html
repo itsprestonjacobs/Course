@@ -9,9 +9,9 @@ the cogs. Change it here; the whole bot updates.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
 
 <span class="c1"># ---- Branding ----</span>
-<span class="n">STUDIO_NAME</span> <span class="o">=</span> <span class="s2">&quot;Derpy&#39;s Designs&quot;</span>
-<span class="n">TAGLINE</span> <span class="o">=</span> <span class="s2">&quot;Where Creativity Meets Precision&quot;</span>
-<span class="n">BRAND_COLOR</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;#1e9bff&quot;</span><span class="p">)</span>
+<span class="n">STUDIO_NAME</span> <span class="o">=</span> <span class="s2">&quot;My Bot&quot;</span>
+<span class="n">TAGLINE</span> <span class="o">=</span> <span class="s2">&quot;Made with discord.py&quot;</span>
+<span class="n">BRAND_COLOR</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Color</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;#5865f2&quot;</span><span class="p">)</span>
 
 <span class="n">BANNERS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;welcome&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;assistance&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;market&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>   <span class="c1"># paste image links</span>
 <span class="n">DIVIDER_IMAGE</span> <span class="o">=</span> <span class="kc">None</span>
@@ -34,12 +34,11 @@ the cogs. Change it here; the whole bot updates.</p>
 
 <span class="c1"># ---- Ticket categories: (label, description, emoji) ----</span>
 <span class="n">TICKET_CATEGORIES</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s2">&quot;Place an Order&quot;</span><span class="p">,</span> <span class="s2">&quot;Order a custom design or bot&quot;</span><span class="p">,</span> <span class="s2">&quot;🛒&quot;</span><span class="p">),</span>
     <span class="p">(</span><span class="s2">&quot;General Support&quot;</span><span class="p">,</span> <span class="s2">&quot;Questions, feedback, or help&quot;</span><span class="p">,</span> <span class="s2">&quot;💬&quot;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;Payment / Refund&quot;</span><span class="p">,</span> <span class="s2">&quot;Billing, invoices, and refunds&quot;</span><span class="p">,</span> <span class="s2">&quot;💳&quot;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;Claim a Purchase&quot;</span><span class="p">,</span> <span class="s2">&quot;Claim a purchased role or ad&quot;</span><span class="p">,</span> <span class="s2">&quot;🎟️&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Report a Problem&quot;</span><span class="p">,</span> <span class="s2">&quot;Report a user or an issue&quot;</span><span class="p">,</span> <span class="s2">&quot;🚩&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Billing / Payment&quot;</span><span class="p">,</span> <span class="s2">&quot;Payment or purchase help&quot;</span><span class="p">,</span> <span class="s2">&quot;💳&quot;</span><span class="p">),</span>
     <span class="p">(</span><span class="s2">&quot;Partnership&quot;</span><span class="p">,</span> <span class="s2">&quot;Partnerships and collaborations&quot;</span><span class="p">,</span> <span class="s2">&quot;🤝&quot;</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;Staff Report&quot;</span><span class="p">,</span> <span class="s2">&quot;Report a problem or staff concern&quot;</span><span class="p">,</span> <span class="s2">&quot;🛡️&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Other&quot;</span><span class="p">,</span> <span class="s2">&quot;Anything else&quot;</span><span class="p">,</span> <span class="s2">&quot;❓&quot;</span><span class="p">),</span>
 <span class="p">]</span>
 
 <span class="c1"># ---- Auto-moderation ----</span>
@@ -105,9 +104,9 @@ new branding.</p>
 </ul>
 </section>
 <style>
-.ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#0f74cc;--accent-weak:#e9f2fb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}
+.ddc{--bg:#ffffff;--panel:#f5f6f8;--sidebar:#f4f5f7;--text:#333a42;--dim:#5c6773;--strong:#111318;--border:#e2e4e8;--accent:#4752c4;--accent-weak:#ecedfb;--good:#1a7f4b;--good-weak:#e7f4ec;--warn:#8a5a00;--warn-weak:#fbf1de;--code-inline:#eef1f5;--code-inline-fg:#0b5fb0;--code-bg:#1e2127;--code-border:#2b303a;--card:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:var(--text);max-width:820px;margin:0 auto;padding:8px 4px 40px;}
 .ddc *{box-sizing:border-box;}
-@media (prefers-color-scheme:dark){.ddc{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#1e9bff;--accent-weak:rgba(30,155,255,.13);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}}
+@media (prefers-color-scheme:dark){.ddc{--bg:#1e1f22;--panel:#26282c;--sidebar:#1a1b1e;--text:#cfd4db;--dim:#8b939f;--strong:#f2f3f5;--border:#34373d;--accent:#5865f2;--accent-weak:rgba(88,101,242,.16);--good:#3ba55d;--good-weak:rgba(59,165,93,.14);--warn:#d6a025;--warn-weak:rgba(214,160,37,.14);--code-inline:#2b2d31;--code-inline-fg:#8fd0ff;--code-bg:#1a1b1e;--code-border:#34373d;--card:#26282c;}}
 
 .ddc h1{font-size:1.95rem;line-height:1.2;margin:.1em 0 .15em;letter-spacing:-.01em;color:var(--strong);font-weight:800;}
 .ddc h2{font-size:1.35rem;margin:1.9em 0 .5em;padding-top:1em;border-top:1px solid var(--border);color:var(--strong);font-weight:700;}
